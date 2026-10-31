@@ -1,0 +1,1137 @@
+{
+  "id": "char_245_cello",
+  "name": "塑心",
+  "targetHeight": 1.65,
+  "animations": {
+    "front/Attack": {
+      "animation": "Attack",
+      "fps": 30,
+      "frames": 48,
+      "duration": 1.600000023841858,
+      "worldSide": 496.9023460053429,
+      "visibleWidth": 460.0947648197619,
+      "visibleHeight": 429.95189296137005,
+      "bodyHeight": 269.094,
+      "groundY": -1.481,
+      "center": {
+        "x": 1.668731611259858,
+        "y": 213.48376722140097
+      },
+      "bounds": {
+        "minX": -228.3786507986211,
+        "minY": -1.4921792592840717,
+        "maxX": 231.7161140211408,
+        "maxY": 428.459713702086
+      },
+      "pivot": {
+        "x": 0.496641731268377,
+        "y": 0.07037078021944881
+      },
+      "cellSize": 320,
+      "availableAnimations": [
+        "Attack",
+        "Default",
+        "Die",
+        "Idle",
+        "Skill_1",
+        "Skill_2_Attack",
+        "Skill_2_Begin",
+        "Skill_2_End",
+        "Skill_2_Idle",
+        "Skill_3_Begin",
+        "Skill_3_End",
+        "Skill_3_Loop",
+        "Start"
+      ],
+      "model": "front",
+      "pages": [
+        {
+          "image": "front-Attack-0.png",
+          "startFrame": 0,
+          "frames": 48,
+          "columns": 8,
+          "rows": 6
+        }
+      ]
+    },
+    "front/Default": {
+      "animation": "Default",
+      "fps": 30,
+      "frames": 1,
+      "duration": 0,
+      "worldSide": 461.576455242982,
+      "visibleWidth": 380.9529883088944,
+      "visibleHeight": 427.3856067064648,
+      "bodyHeight": 269.094,
+      "groundY": -1.481,
+      "center": {
+        "x": -37.902156644173886,
+        "y": 212.47008752443773
+      },
+      "bounds": {
+        "minX": -228.3786507986211,
+        "minY": -1.222715828794641,
+        "maxX": 152.57433751027332,
+        "maxY": 426.1628908776701
+      },
+      "pivot": {
+        "x": 0.5821145797487038,
+        "y": 0.03968603660126091
+      },
+      "cellSize": 320,
+      "availableAnimations": [
+        "Attack",
+        "Default",
+        "Die",
+        "Idle",
+        "Skill_1",
+        "Skill_2_Attack",
+        "Skill_2_Begin",
+        "Skill_2_End",
+        "Skill_2_Idle",
+        "Skill_3_Begin",
+        "Skill_3_End",
+        "Skill_3_Loop",
+        "Start"
+      ],
+      "model": "front",
+      "pages": [
+        {
+          "image": "front-Default-0.png",
+          "startFrame": 0,
+          "frames": 1,
+          "columns": 1,
+          "rows": 1
+        }
+      ]
+    },
+    "front/Die": {
+      "animation": "Die",
+      "fps": 30,
+      "frames": 30,
+      "duration": 1,
+      "worldSide": 503.49946084373437,
+      "visibleWidth": 425.5007999182179,
+      "visibleHeight": 466.2032044849392,
+      "bodyHeight": 269.094,
+      "groundY": -1.481,
+      "center": {
+        "x": -26.549999436423462,
+        "y": 196.04365003315394
+      },
+      "bounds": {
+        "minX": -239.30039939553242,
+        "minY": -37.05795220931569,
+        "maxX": 186.2004005226855,
+        "maxY": 429.14525227562353
+      },
+      "pivot": {
+        "x": 0.5527309391591653,
+        "y": 0.11063781537196549
+      },
+      "cellSize": 320,
+      "availableAnimations": [
+        "Attack",
+        "Default",
+        "Die",
+        "Idle",
+        "Skill_1",
+        "Skill_2_Attack",
+        "Skill_2_Begin",
+        "Skill_2_End",
+        "Skill_2_Idle",
+        "Skill_3_Begin",
+        "Skill_3_End",
+        "Skill_3_Loop",
+        "Start"
+      ],
+      "model": "front",
+      "pages": [
+        {
+          "image": "front-Die-0.png",
+          "startFrame": 0,
+          "frames": 30,
+          "columns": 8,
+          "rows": 4
+        }
+      ]
+    },
+    "front/Idle": {
+      "animation": "Idle",
+      "fps": 30,
+      "frames": 240,
+      "duration": 8,
+      "worldSide": 478.35540072109006,
+      "visibleWidth": 442.9216673343426,
+      "visibleHeight": 431.33450345382647,
+      "bodyHeight": 269.094,
+      "groundY": -1.481,
+      "center": {
+        "x": -8.519604164489323,
+        "y": 210.4956391507569
+      },
+      "bounds": {
+        "minX": -229.98043783166062,
+        "minY": -5.171612576156329,
+        "maxX": 212.94122950268198,
+        "maxY": 426.1628908776701
+      },
+      "pivot": {
+        "x": 0.5178101975051324,
+        "y": 0.05995973112575248
+      },
+      "cellSize": 320,
+      "availableAnimations": [
+        "Attack",
+        "Default",
+        "Die",
+        "Idle",
+        "Skill_1",
+        "Skill_2_Attack",
+        "Skill_2_Begin",
+        "Skill_2_End",
+        "Skill_2_Idle",
+        "Skill_3_Begin",
+        "Skill_3_End",
+        "Skill_3_Loop",
+        "Start"
+      ],
+      "model": "front",
+      "pages": [
+        {
+          "image": "front-Idle-0.png",
+          "startFrame": 0,
+          "frames": 64,
+          "columns": 8,
+          "rows": 8
+        },
+        {
+          "image": "front-Idle-64.png",
+          "startFrame": 64,
+          "frames": 64,
+          "columns": 8,
+          "rows": 8
+        },
+        {
+          "image": "front-Idle-128.png",
+          "startFrame": 128,
+          "frames": 64,
+          "columns": 8,
+          "rows": 8
+        },
+        {
+          "image": "front-Idle-192.png",
+          "startFrame": 192,
+          "frames": 48,
+          "columns": 8,
+          "rows": 6
+        }
+      ]
+    },
+    "front/Skill_1": {
+      "animation": "Skill_1",
+      "fps": 30,
+      "frames": 48,
+      "duration": 1.600000023841858,
+      "worldSide": 559.2010472977647,
+      "visibleWidth": 517.7787474979302,
+      "visibleHeight": 439.38660335226365,
+      "bodyHeight": 269.094,
+      "groundY": -1.481,
+      "center": {
+        "x": -25.930824806139768,
+        "y": 206.4752653385398
+      },
+      "bounds": {
+        "minX": -284.82019855510487,
+        "minY": -13.218036337592025,
+        "maxX": 232.95854894282533,
+        "maxY": 426.1685670146716
+      },
+      "pivot": {
+        "x": 0.5463712021489331,
+        "y": 0.1307673844026344
+      },
+      "cellSize": 320,
+      "availableAnimations": [
+        "Attack",
+        "Default",
+        "Die",
+        "Idle",
+        "Skill_1",
+        "Skill_2_Attack",
+        "Skill_2_Begin",
+        "Skill_2_End",
+        "Skill_2_Idle",
+        "Skill_3_Begin",
+        "Skill_3_End",
+        "Skill_3_Loop",
+        "Start"
+      ],
+      "model": "front",
+      "pages": [
+        {
+          "image": "front-Skill_1-0.png",
+          "startFrame": 0,
+          "frames": 48,
+          "columns": 8,
+          "rows": 6
+        }
+      ]
+    },
+    "front/Skill_2_Attack": {
+      "animation": "Skill_2_Attack",
+      "fps": 30,
+      "frames": 48,
+      "duration": 1.600000023841858,
+      "worldSide": 467.1058823825292,
+      "visibleWidth": 432.50544665049,
+      "visibleHeight": 427.9747356346628,
+      "bodyHeight": 269.094,
+      "groundY": -1.481,
+      "center": {
+        "x": 2.0360209990399767,
+        "y": 210.59810343176588
+      },
+      "bounds": {
+        "minX": -214.21670232620502,
+        "minY": -3.3892643855654967,
+        "maxX": 218.28874432428498,
+        "maxY": 424.5854712490973
+      },
+      "pivot": {
+        "x": 0.4956412002592324,
+        "y": 0.04914268611308176
+      },
+      "cellSize": 320,
+      "availableAnimations": [
+        "Attack",
+        "Default",
+        "Die",
+        "Idle",
+        "Skill_1",
+        "Skill_2_Attack",
+        "Skill_2_Begin",
+        "Skill_2_End",
+        "Skill_2_Idle",
+        "Skill_3_Begin",
+        "Skill_3_End",
+        "Skill_3_Loop",
+        "Start"
+      ],
+      "model": "front",
+      "pages": [
+        {
+          "image": "front-Skill_2_Attack-0.png",
+          "startFrame": 0,
+          "frames": 48,
+          "columns": 8,
+          "rows": 6
+        }
+      ]
+    },
+    "front/Skill_2_Begin": {
+      "animation": "Skill_2_Begin",
+      "fps": 30,
+      "frames": 7,
+      "duration": 0.23333333432674408,
+      "worldSide": 462.4208353700579,
+      "visibleWidth": 380.9529883088944,
+      "visibleHeight": 428.167440157461,
+      "bodyHeight": 269.094,
+      "groundY": -1.481,
+      "center": {
+        "x": -37.902156644173886,
+        "y": 212.07917079893963
+      },
+      "bounds": {
+        "minX": -228.3786507986211,
+        "minY": -2.004549279790865,
+        "maxX": 152.57433751027332,
+        "maxY": 426.1628908776701
+      },
+      "pivot": {
+        "x": 0.5819646385826067,
+        "y": 0.04137193963325486
+      },
+      "cellSize": 320,
+      "availableAnimations": [
+        "Attack",
+        "Default",
+        "Die",
+        "Idle",
+        "Skill_1",
+        "Skill_2_Attack",
+        "Skill_2_Begin",
+        "Skill_2_End",
+        "Skill_2_Idle",
+        "Skill_3_Begin",
+        "Skill_3_End",
+        "Skill_3_Loop",
+        "Start"
+      ],
+      "model": "front",
+      "pages": [
+        {
+          "image": "front-Skill_2_Begin-0.png",
+          "startFrame": 0,
+          "frames": 7,
+          "columns": 7,
+          "rows": 1
+        }
+      ]
+    },
+    "front/Skill_2_End": {
+      "animation": "Skill_2_End",
+      "fps": 30,
+      "frames": 10,
+      "duration": 0.3333333432674408,
+      "worldSide": 462.4459780795741,
+      "visibleWidth": 380.76137850504324,
+      "visibleHeight": 428.19072044405004,
+      "bodyHeight": 269.094,
+      "groundY": -1.481,
+      "center": {
+        "x": -37.16527841818703,
+        "y": 211.96324690004786
+      },
+      "bounds": {
+        "minX": -227.54596767070865,
+        "minY": -2.132113321977176,
+        "maxX": 153.2154108343346,
+        "maxY": 426.0586071220729
+      },
+      "pivot": {
+        "x": 0.580366745911653,
+        "y": 0.041647550314352855
+      },
+      "cellSize": 320,
+      "availableAnimations": [
+        "Attack",
+        "Default",
+        "Die",
+        "Idle",
+        "Skill_1",
+        "Skill_2_Attack",
+        "Skill_2_Begin",
+        "Skill_2_End",
+        "Skill_2_Idle",
+        "Skill_3_Begin",
+        "Skill_3_End",
+        "Skill_3_Loop",
+        "Start"
+      ],
+      "model": "front",
+      "pages": [
+        {
+          "image": "front-Skill_2_End-0.png",
+          "startFrame": 0,
+          "frames": 10,
+          "columns": 8,
+          "rows": 2
+        }
+      ]
+    },
+    "front/Skill_2_Idle": {
+      "animation": "Skill_2_Idle",
+      "fps": 30,
+      "frames": 30,
+      "duration": 1,
+      "worldSide": 463.41083549058266,
+      "visibleWidth": 384.22865922556787,
+      "visibleHeight": 429.08410693572466,
+      "bodyHeight": 269.094,
+      "groundY": -1.481,
+      "center": {
+        "x": -20.90150511323567,
+        "y": 212.40994014588517
+      },
+      "bounds": {
+        "minX": -213.0158347260196,
+        "minY": -2.132113321977176,
+        "maxX": 171.21282449954825,
+        "maxY": 426.9519936137475
+      },
+      "pivot": {
+        "x": 0.5451036175947604,
+        "y": 0.04163795086702987
+      },
+      "cellSize": 320,
+      "availableAnimations": [
+        "Attack",
+        "Default",
+        "Die",
+        "Idle",
+        "Skill_1",
+        "Skill_2_Attack",
+        "Skill_2_Begin",
+        "Skill_2_End",
+        "Skill_2_Idle",
+        "Skill_3_Begin",
+        "Skill_3_End",
+        "Skill_3_Loop",
+        "Start"
+      ],
+      "model": "front",
+      "pages": [
+        {
+          "image": "front-Skill_2_Idle-0.png",
+          "startFrame": 0,
+          "frames": 30,
+          "columns": 8,
+          "rows": 4
+        }
+      ]
+    },
+    "front/Skill_3_Begin": {
+      "animation": "Skill_3_Begin",
+      "fps": 30,
+      "frames": 10,
+      "duration": 0.3333333432674408,
+      "worldSide": 462.03363302003646,
+      "visibleWidth": 405.40111387479146,
+      "visibleHeight": 427.8089194629967,
+      "bodyHeight": 269.094,
+      "groundY": -1.481,
+      "center": {
+        "x": -25.678093861225364,
+        "y": 212.25843114617177
+      },
+      "bounds": {
+        "minX": -228.3786507986211,
+        "minY": -1.646028585326576,
+        "maxX": 177.02246307617037,
+        "maxY": 426.1628908776701
+      },
+      "pivot": {
+        "x": 0.5555762438621256,
+        "y": 0.040599610121960505
+      },
+      "cellSize": 320,
+      "availableAnimations": [
+        "Attack",
+        "Default",
+        "Die",
+        "Idle",
+        "Skill_1",
+        "Skill_2_Attack",
+        "Skill_2_Begin",
+        "Skill_2_End",
+        "Skill_2_Idle",
+        "Skill_3_Begin",
+        "Skill_3_End",
+        "Skill_3_Loop",
+        "Start"
+      ],
+      "model": "front",
+      "pages": [
+        {
+          "image": "front-Skill_3_Begin-0.png",
+          "startFrame": 0,
+          "frames": 10,
+          "columns": 8,
+          "rows": 2
+        }
+      ]
+    },
+    "front/Skill_3_End": {
+      "animation": "Skill_3_End",
+      "fps": 30,
+      "frames": 50,
+      "duration": 1.6666666269302368,
+      "worldSide": 546.6953369585875,
+      "visibleWidth": 506.1993860727662,
+      "visibleHeight": 439.48872016459507,
+      "bodyHeight": 269.094,
+      "groundY": -1.481,
+      "center": {
+        "x": -44.020490127245694,
+        "y": 211.96251091572083
+      },
+      "bounds": {
+        "minX": -297.1201831636288,
+        "minY": -7.781849166576716,
+        "maxX": 209.0792029091374,
+        "maxY": 431.70687099801836
+      },
+      "pivot": {
+        "x": 0.5805210638381213,
+        "y": 0.11228403356259631
+      },
+      "cellSize": 320,
+      "availableAnimations": [
+        "Attack",
+        "Default",
+        "Die",
+        "Idle",
+        "Skill_1",
+        "Skill_2_Attack",
+        "Skill_2_Begin",
+        "Skill_2_End",
+        "Skill_2_Idle",
+        "Skill_3_Begin",
+        "Skill_3_End",
+        "Skill_3_Loop",
+        "Start"
+      ],
+      "model": "front",
+      "pages": [
+        {
+          "image": "front-Skill_3_End-0.png",
+          "startFrame": 0,
+          "frames": 50,
+          "columns": 8,
+          "rows": 7
+        }
+      ]
+    },
+    "front/Skill_3_Loop": {
+      "animation": "Skill_3_Loop",
+      "fps": 30,
+      "frames": 180,
+      "duration": 6,
+      "worldSide": 467.7771268583302,
+      "visibleWidth": 428.3833433505621,
+      "visibleHeight": 433.12696931326866,
+      "bodyHeight": 269.094,
+      "groundY": -1.481,
+      "center": {
+        "x": -7.868903059020013,
+        "y": 204.67143109927093
+      },
+      "bounds": {
+        "minX": -222.06057473430107,
+        "minY": -11.892053557363404,
+        "maxX": 206.32276861626104,
+        "maxY": 421.23491575590526
+      },
+      "pivot": {
+        "x": 0.5168219064319559,
+        "y": 0.06245951469692701
+      },
+      "cellSize": 320,
+      "availableAnimations": [
+        "Attack",
+        "Default",
+        "Die",
+        "Idle",
+        "Skill_1",
+        "Skill_2_Attack",
+        "Skill_2_Begin",
+        "Skill_2_End",
+        "Skill_2_Idle",
+        "Skill_3_Begin",
+        "Skill_3_End",
+        "Skill_3_Loop",
+        "Start"
+      ],
+      "model": "front",
+      "pages": [
+        {
+          "image": "front-Skill_3_Loop-0.png",
+          "startFrame": 0,
+          "frames": 64,
+          "columns": 8,
+          "rows": 8
+        },
+        {
+          "image": "front-Skill_3_Loop-64.png",
+          "startFrame": 64,
+          "frames": 64,
+          "columns": 8,
+          "rows": 8
+        },
+        {
+          "image": "front-Skill_3_Loop-128.png",
+          "startFrame": 128,
+          "frames": 52,
+          "columns": 8,
+          "rows": 7
+        }
+      ]
+    },
+    "front/Start": {
+      "animation": "Start",
+      "fps": 30,
+      "frames": 30,
+      "duration": 1,
+      "worldSide": 1831.66666975137,
+      "visibleWidth": 568.5301476702492,
+      "visibleHeight": 1695.9876571771943,
+      "bodyHeight": 269.094,
+      "groundY": -1.481,
+      "center": {
+        "x": -130.97348853756148,
+        "y": 826.1031351509669
+      },
+      "bounds": {
+        "minX": -415.2385623726861,
+        "minY": -21.890693437630357,
+        "maxX": 153.29158529756316,
+        "maxY": 1674.096963739564
+      },
+      "pivot": {
+        "x": 0.5715050891630515,
+        "y": 0.048988280021985686
+      },
+      "cellSize": 320,
+      "availableAnimations": [
+        "Attack",
+        "Default",
+        "Die",
+        "Idle",
+        "Skill_1",
+        "Skill_2_Attack",
+        "Skill_2_Begin",
+        "Skill_2_End",
+        "Skill_2_Idle",
+        "Skill_3_Begin",
+        "Skill_3_End",
+        "Skill_3_Loop",
+        "Start"
+      ],
+      "model": "front",
+      "pages": [
+        {
+          "image": "front-Start-0.png",
+          "startFrame": 0,
+          "frames": 30,
+          "columns": 8,
+          "rows": 4
+        }
+      ]
+    },
+    "build/Default": {
+      "animation": "Default",
+      "fps": 30,
+      "frames": 1,
+      "duration": 0,
+      "worldSide": 461.9650969762606,
+      "visibleWidth": 378.18667852006087,
+      "visibleHeight": 427.74546016320426,
+      "bodyHeight": 269.769,
+      "groundY": -1.478,
+      "center": {
+        "x": -36.707553996809594,
+        "y": 212.31280450094704
+      },
+      "bounds": {
+        "minX": -225.80089325684003,
+        "minY": -1.5599255806550616,
+        "maxX": 152.38578526322084,
+        "maxY": 426.18553458254917
+      },
+      "pivot": {
+        "x": 0.5794595830660686,
+        "y": 0.04041375443596046
+      },
+      "cellSize": 320,
+      "availableAnimations": [
+        "Default",
+        "Interact",
+        "Move",
+        "Relax",
+        "Sit",
+        "Sleep"
+      ],
+      "model": "build",
+      "pages": [
+        {
+          "image": "build-Default-0.png",
+          "startFrame": 0,
+          "frames": 1,
+          "columns": 1,
+          "rows": 1
+        }
+      ]
+    },
+    "build/Interact": {
+      "animation": "Interact",
+      "fps": 30,
+      "frames": 70,
+      "duration": 2.3333332538604736,
+      "worldSide": 473.3721807671317,
+      "visibleWidth": 417.06084371640384,
+      "visibleHeight": 438.30757478438113,
+      "bodyHeight": 269.769,
+      "groundY": -1.478,
+      "center": {
+        "x": -50.4692219378219,
+        "y": 210.6207425788042
+      },
+      "bounds": {
+        "minX": -258.9996437960238,
+        "minY": -8.533044813386352,
+        "maxX": 158.06119992038,
+        "maxY": 429.77452997099476
+      },
+      "pivot": {
+        "x": 0.6066163665470014,
+        "y": 0.05506311706471845
+      },
+      "cellSize": 320,
+      "availableAnimations": [
+        "Default",
+        "Interact",
+        "Move",
+        "Relax",
+        "Sit",
+        "Sleep"
+      ],
+      "model": "build",
+      "pages": [
+        {
+          "image": "build-Interact-0.png",
+          "startFrame": 0,
+          "frames": 64,
+          "columns": 8,
+          "rows": 8
+        },
+        {
+          "image": "build-Interact-64.png",
+          "startFrame": 64,
+          "frames": 6,
+          "columns": 6,
+          "rows": 1
+        }
+      ]
+    },
+    "build/Move": {
+      "animation": "Move",
+      "fps": 30,
+      "frames": 40,
+      "duration": 1.3333333730697632,
+      "worldSide": 464.890039421923,
+      "visibleWidth": 381.8385237323311,
+      "visibleHeight": 430.4537402054842,
+      "bodyHeight": 269.769,
+      "groundY": -1.478,
+      "center": {
+        "x": -32.61719669393264,
+        "y": 210.6139978176376
+      },
+      "bounds": {
+        "minX": -223.5364585600982,
+        "minY": -4.6128722851045225,
+        "maxX": 158.30206517223291,
+        "maxY": 425.8408679203797
+      },
+      "pivot": {
+        "x": 0.5701611003206073,
+        "y": 0.046959538906168274
+      },
+      "cellSize": 320,
+      "availableAnimations": [
+        "Default",
+        "Interact",
+        "Move",
+        "Relax",
+        "Sit",
+        "Sleep"
+      ],
+      "model": "build",
+      "pages": [
+        {
+          "image": "build-Move-0.png",
+          "startFrame": 0,
+          "frames": 40,
+          "columns": 8,
+          "rows": 5
+        }
+      ]
+    },
+    "build/Relax": {
+      "animation": "Relax",
+      "fps": 30,
+      "frames": 120,
+      "duration": 4,
+      "worldSide": 462.011066210008,
+      "visibleWidth": 388.14964898796416,
+      "visibleHeight": 427.7880242685259,
+      "bodyHeight": 269.769,
+      "groundY": -1.478,
+      "center": {
+        "x": -33.36047915037001,
+        "y": 212.33315754275105
+      },
+      "bounds": {
+        "minX": -227.4353036443521,
+        "minY": -1.5608545915119052,
+        "maxX": 160.71434534361208,
+        "maxY": 426.227169677014
+      },
+      "pivot": {
+        "x": 0.5722070997650215,
+        "y": 0.04041542925676456
+      },
+      "cellSize": 320,
+      "availableAnimations": [
+        "Default",
+        "Interact",
+        "Move",
+        "Relax",
+        "Sit",
+        "Sleep"
+      ],
+      "model": "build",
+      "pages": [
+        {
+          "image": "build-Relax-0.png",
+          "startFrame": 0,
+          "frames": 64,
+          "columns": 8,
+          "rows": 8
+        },
+        {
+          "image": "build-Relax-64.png",
+          "startFrame": 64,
+          "frames": 56,
+          "columns": 8,
+          "rows": 7
+        }
+      ]
+    },
+    "build/Sit": {
+      "animation": "Sit",
+      "fps": 30,
+      "frames": 120,
+      "duration": 4,
+      "worldSide": 443.52332185218364,
+      "visibleWidth": 383.19667087333283,
+      "visibleHeight": 410.66974245572555,
+      "bodyHeight": 269.769,
+      "groundY": -1.478,
+      "center": {
+        "x": -39.507686114768575,
+        "y": 83.20613390996215
+      },
+      "bounds": {
+        "minX": -231.106021551435,
+        "minY": -122.12873731790064,
+        "maxX": 152.09064932189784,
+        "maxY": 288.5410051378249
+      },
+      "pivot": {
+        "x": 0.5890769079510448,
+        "y": 0.3123973874417975
+      },
+      "cellSize": 320,
+      "availableAnimations": [
+        "Default",
+        "Interact",
+        "Move",
+        "Relax",
+        "Sit",
+        "Sleep"
+      ],
+      "model": "build",
+      "pages": [
+        {
+          "image": "build-Sit-0.png",
+          "startFrame": 0,
+          "frames": 64,
+          "columns": 8,
+          "rows": 8
+        },
+        {
+          "image": "build-Sit-64.png",
+          "startFrame": 64,
+          "frames": 56,
+          "columns": 8,
+          "rows": 7
+        }
+      ]
+    },
+    "build/Sleep": {
+      "animation": "Sleep",
+      "fps": 30,
+      "frames": 95,
+      "duration": 3.1666667461395264,
+      "worldSide": 465.32467268853355,
+      "visibleWidth": 430.8561784153088,
+      "visibleHeight": 152.4826012307436,
+      "bodyHeight": 269.769,
+      "groundY": -1.478,
+      "center": {
+        "x": -2.6700421340188143,
+        "y": 64.32953546526177
+      },
+      "bounds": {
+        "minX": -218.09813134167322,
+        "minY": -11.911765150110035,
+        "maxX": 212.7580470736356,
+        "maxY": 140.57083608063357
+      },
+      "pivot": {
+        "x": 0.5057380196897618,
+        "y": 0.36175343960684214
+      },
+      "cellSize": 320,
+      "availableAnimations": [
+        "Default",
+        "Interact",
+        "Move",
+        "Relax",
+        "Sit",
+        "Sleep"
+      ],
+      "model": "build",
+      "pages": [
+        {
+          "image": "build-Sleep-0.png",
+          "startFrame": 0,
+          "frames": 64,
+          "columns": 8,
+          "rows": 8
+        },
+        {
+          "image": "build-Sleep-64.png",
+          "startFrame": 64,
+          "frames": 31,
+          "columns": 8,
+          "rows": 4
+        }
+      ]
+    }
+  },
+  "models": {
+    "front": {
+      "bodyHeight": 269.094,
+      "groundY": -1.481,
+      "availableAnimations": [
+        "Attack",
+        "Default",
+        "Die",
+        "Idle",
+        "Skill_1",
+        "Skill_2_Attack",
+        "Skill_2_Begin",
+        "Skill_2_End",
+        "Skill_2_Idle",
+        "Skill_3_Begin",
+        "Skill_3_End",
+        "Skill_3_Loop",
+        "Start"
+      ]
+    },
+    "build": {
+      "bodyHeight": 269.769,
+      "groundY": -1.478,
+      "availableAnimations": [
+        "Default",
+        "Interact",
+        "Move",
+        "Relax",
+        "Sit",
+        "Sleep"
+      ]
+    }
+  },
+  "sourceCatalog": [
+    {
+      "skin": "默认",
+      "direction": "front",
+      "relativeStem": "defaultskin/front/char_245_cello",
+      "animations": [
+        "Attack",
+        "Default",
+        "Die",
+        "Idle",
+        "Skill_1",
+        "Skill_2_Attack",
+        "Skill_2_Begin",
+        "Skill_2_End",
+        "Skill_2_Idle",
+        "Skill_3_Begin",
+        "Skill_3_End",
+        "Skill_3_Loop",
+        "Start"
+      ]
+    },
+    {
+      "skin": "默认",
+      "direction": "back",
+      "relativeStem": "defaultskin/back/char_245_cello",
+      "animations": [
+        "Attack",
+        "Default",
+        "Idle",
+        "Skill_1",
+        "Skill_2_Attack",
+        "Skill_2_Begin",
+        "Skill_2_End",
+        "Skill_2_Idle",
+        "Skill_3_Begin",
+        "Skill_3_End",
+        "Skill_3_Loop",
+        "Start"
+      ]
+    },
+    {
+      "skin": "默认",
+      "direction": "build",
+      "relativeStem": "defaultskin/build/build_char_245_cello",
+      "animations": [
+        "Default",
+        "Interact",
+        "Move",
+        "Relax",
+        "Sit",
+        "Sleep"
+      ]
+    },
+    {
+      "skin": "无我唯识",
+      "direction": "front",
+      "relativeStem": "char_245_cello_sale_12/front/char_245_cello_sale_12",
+      "animations": [
+        "Attack",
+        "Default",
+        "Die",
+        "Idle",
+        "Skill_1",
+        "Skill_2_Attack",
+        "Skill_2_Begin",
+        "Skill_2_End",
+        "Skill_2_Idle",
+        "Skill_3_Begin",
+        "Skill_3_End",
+        "Skill_3_Loop",
+        "Start"
+      ]
+    },
+    {
+      "skin": "无我唯识",
+      "direction": "back",
+      "relativeStem": "char_245_cello_sale_12/back/char_245_cello_sale_12",
+      "animations": [
+        "Attack",
+        "Default",
+        "Idle",
+        "Skill_1",
+        "Skill_2_Attack",
+        "Skill_2_Begin",
+        "Skill_2_End",
+        "Skill_2_Idle",
+        "Skill_3_Begin",
+        "Skill_3_End",
+        "Skill_3_Loop",
+        "Start"
+      ]
+    },
+    {
+      "skin": "无我唯识",
+      "direction": "build",
+      "relativeStem": "char_245_cello_sale_12/build/build_char_245_cello_sale_12",
+      "animations": [
+        "Default",
+        "Interact",
+        "Move",
+        "Relax",
+        "Sit",
+        "Sleep",
+        "Special"
+      ]
+    }
+  ]
+}

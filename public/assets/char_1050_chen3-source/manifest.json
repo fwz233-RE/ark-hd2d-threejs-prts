@@ -1,0 +1,81 @@
+{
+  "character": "赤刃明霄陈",
+  "id": "char_1050_chen3",
+  "baseUrl": "https://torappu.prts.wiki/assets/char_spine/char_1050_chen3/",
+  "meta": {
+    "url": "https://torappu.prts.wiki/assets/char_spine/char_1050_chen3/meta.json",
+    "path": "meta.json",
+    "bytes": 285
+  },
+  "models": [
+    {
+      "skin": "默认",
+      "direction": "front",
+      "relativeStem": "defaultskin/front/char_1050_chen3",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_1050_chen3/defaultskin/front/char_1050_chen3.skel",
+        "path": "defaultskin/front/char_1050_chen3.skel",
+        "bytes": 759966
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_1050_chen3/defaultskin/front/char_1050_chen3.atlas",
+        "path": "defaultskin/front/char_1050_chen3.atlas",
+        "bytes": 17824,
+        "referencedPngs": [
+          {
+            "name": "char_1050_chen3.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_1050_chen3/defaultskin/front/char_1050_chen3.png",
+            "path": "defaultskin/front/char_1050_chen3.png",
+            "bytes": 195653
+          }
+        ]
+      }
+    },
+    {
+      "skin": "默认",
+      "direction": "back",
+      "relativeStem": "defaultskin/back/char_1050_chen3",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_1050_chen3/defaultskin/back/char_1050_chen3.skel",
+        "path": "defaultskin/back/char_1050_chen3.skel",
+        "bytes": 669821
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_1050_chen3/defaultskin/back/char_1050_chen3.atlas",
+        "path": "defaultskin/back/char_1050_chen3.atlas",
+        "bytes": 17824,
+        "referencedPngs": [
+          {
+            "name": "char_1050_chen3.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_1050_chen3/defaultskin/back/char_1050_chen3.png",
+            "path": "defaultskin/back/char_1050_chen3.png",
+            "bytes": 195653
+          }
+        ]
+      }
+    },
+    {
+      "skin": "默认",
+      "direction": "build",
+      "relativeStem": "defaultskin/build/build_char_1050_chen3",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_1050_chen3/defaultskin/build/build_char_1050_chen3.skel",
+        "path": "defaultskin/build/build_char_1050_chen3.skel",
+        "bytes": 382923
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_1050_chen3/defaultskin/build/build_char_1050_chen3.atlas",
+        "path": "defaultskin/build/build_char_1050_chen3.atlas",
+        "bytes": 17996,
+        "referencedPngs": [
+          {
+            "name": "build_char_1050_chen3.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_1050_chen3/defaultskin/build/build_char_1050_chen3.png",
+            "path": "defaultskin/build/build_char_1050_chen3.png",
+            "bytes": 328619
+          }
+        ]
+      }
+    }
+  ]
+}

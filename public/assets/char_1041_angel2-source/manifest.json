@@ -1,0 +1,150 @@
+{
+  "character": "新约能天使",
+  "id": "char_1041_angel2",
+  "baseUrl": "https://torappu.prts.wiki/assets/char_spine/char_1041_angel2/",
+  "meta": {
+    "url": "https://torappu.prts.wiki/assets/char_spine/char_1041_angel2/meta.json",
+    "path": "meta.json",
+    "bytes": 563
+  },
+  "models": [
+    {
+      "skin": "默认",
+      "direction": "front",
+      "relativeStem": "defaultskin/front/char_1041_angel2",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_1041_angel2/defaultskin/front/char_1041_angel2.skel",
+        "path": "defaultskin/front/char_1041_angel2.skel",
+        "bytes": 1132701
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_1041_angel2/defaultskin/front/char_1041_angel2.atlas",
+        "path": "defaultskin/front/char_1041_angel2.atlas",
+        "bytes": 13950,
+        "referencedPngs": [
+          {
+            "name": "char_1041_angel2.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_1041_angel2/defaultskin/front/char_1041_angel2.png",
+            "path": "defaultskin/front/char_1041_angel2.png",
+            "bytes": 105816
+          }
+        ]
+      }
+    },
+    {
+      "skin": "默认",
+      "direction": "back",
+      "relativeStem": "defaultskin/back/char_1041_angel2",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_1041_angel2/defaultskin/back/char_1041_angel2.skel",
+        "path": "defaultskin/back/char_1041_angel2.skel",
+        "bytes": 529456
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_1041_angel2/defaultskin/back/char_1041_angel2.atlas",
+        "path": "defaultskin/back/char_1041_angel2.atlas",
+        "bytes": 10396,
+        "referencedPngs": [
+          {
+            "name": "char_1041_angel2.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_1041_angel2/defaultskin/back/char_1041_angel2.png",
+            "path": "defaultskin/back/char_1041_angel2.png",
+            "bytes": 95712
+          }
+        ]
+      }
+    },
+    {
+      "skin": "默认",
+      "direction": "build",
+      "relativeStem": "defaultskin/build/build_char_1041_angel2",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_1041_angel2/defaultskin/build/build_char_1041_angel2.skel",
+        "path": "defaultskin/build/build_char_1041_angel2.skel",
+        "bytes": 380821
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_1041_angel2/defaultskin/build/build_char_1041_angel2.atlas",
+        "path": "defaultskin/build/build_char_1041_angel2.atlas",
+        "bytes": 21798,
+        "referencedPngs": [
+          {
+            "name": "build_char_1041_angel2.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_1041_angel2/defaultskin/build/build_char_1041_angel2.png",
+            "path": "defaultskin/build/build_char_1041_angel2.png",
+            "bytes": 291158
+          }
+        ]
+      }
+    },
+    {
+      "skin": "寻翼之歌",
+      "direction": "front",
+      "relativeStem": "char_1041_angel2_iteration_6/front/char_1041_angel2_iteration_6",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_1041_angel2/char_1041_angel2_iteration_6/front/char_1041_angel2_iteration_6.skel",
+        "path": "char_1041_angel2_iteration_6/front/char_1041_angel2_iteration_6.skel",
+        "bytes": 1696861
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_1041_angel2/char_1041_angel2_iteration_6/front/char_1041_angel2_iteration_6.atlas",
+        "path": "char_1041_angel2_iteration_6/front/char_1041_angel2_iteration_6.atlas",
+        "bytes": 18442,
+        "referencedPngs": [
+          {
+            "name": "char_1041_angel2_iteration_6.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_1041_angel2/char_1041_angel2_iteration_6/front/char_1041_angel2_iteration_6.png",
+            "path": "char_1041_angel2_iteration_6/front/char_1041_angel2_iteration_6.png",
+            "bytes": 191047
+          }
+        ]
+      }
+    },
+    {
+      "skin": "寻翼之歌",
+      "direction": "back",
+      "relativeStem": "char_1041_angel2_iteration_6/back/char_1041_angel2_iteration_6",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_1041_angel2/char_1041_angel2_iteration_6/back/char_1041_angel2_iteration_6.skel",
+        "path": "char_1041_angel2_iteration_6/back/char_1041_angel2_iteration_6.skel",
+        "bytes": 988121
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_1041_angel2/char_1041_angel2_iteration_6/back/char_1041_angel2_iteration_6.atlas",
+        "path": "char_1041_angel2_iteration_6/back/char_1041_angel2_iteration_6.atlas",
+        "bytes": 18442,
+        "referencedPngs": [
+          {
+            "name": "char_1041_angel2_iteration_6.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_1041_angel2/char_1041_angel2_iteration_6/back/char_1041_angel2_iteration_6.png",
+            "path": "char_1041_angel2_iteration_6/back/char_1041_angel2_iteration_6.png",
+            "bytes": 191047
+          }
+        ]
+      }
+    },
+    {
+      "skin": "寻翼之歌",
+      "direction": "build",
+      "relativeStem": "char_1041_angel2_iteration_6/build/build_char_1041_angel2_iteration_6",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_1041_angel2/char_1041_angel2_iteration_6/build/build_char_1041_angel2_iteration_6.skel",
+        "path": "char_1041_angel2_iteration_6/build/build_char_1041_angel2_iteration_6.skel",
+        "bytes": 479093
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_1041_angel2/char_1041_angel2_iteration_6/build/build_char_1041_angel2_iteration_6.atlas",
+        "path": "char_1041_angel2_iteration_6/build/build_char_1041_angel2_iteration_6.atlas",
+        "bytes": 14804,
+        "referencedPngs": [
+          {
+            "name": "build_char_1041_angel2_iteration_6.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_1041_angel2/char_1041_angel2_iteration_6/build/build_char_1041_angel2_iteration_6.png",
+            "path": "char_1041_angel2_iteration_6/build/build_char_1041_angel2_iteration_6.png",
+            "bytes": 304131
+          }
+        ]
+      }
+    }
+  ]
+}

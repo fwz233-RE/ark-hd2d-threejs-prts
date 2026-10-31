@@ -1,0 +1,150 @@
+{
+  "character": "塑心",
+  "id": "char_245_cello",
+  "baseUrl": "https://torappu.prts.wiki/assets/char_spine/char_245_cello/",
+  "meta": {
+    "url": "https://torappu.prts.wiki/assets/char_spine/char_245_cello/meta.json",
+    "path": "meta.json",
+    "bytes": 510
+  },
+  "models": [
+    {
+      "skin": "默认",
+      "direction": "front",
+      "relativeStem": "defaultskin/front/char_245_cello",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_245_cello/defaultskin/front/char_245_cello.skel",
+        "path": "defaultskin/front/char_245_cello.skel",
+        "bytes": 548512
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_245_cello/defaultskin/front/char_245_cello.atlas",
+        "path": "defaultskin/front/char_245_cello.atlas",
+        "bytes": 10131,
+        "referencedPngs": [
+          {
+            "name": "char_245_cello.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_245_cello/defaultskin/front/char_245_cello.png",
+            "path": "defaultskin/front/char_245_cello.png",
+            "bytes": 86650
+          }
+        ]
+      }
+    },
+    {
+      "skin": "默认",
+      "direction": "back",
+      "relativeStem": "defaultskin/back/char_245_cello",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_245_cello/defaultskin/back/char_245_cello.skel",
+        "path": "defaultskin/back/char_245_cello.skel",
+        "bytes": 468712
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_245_cello/defaultskin/back/char_245_cello.atlas",
+        "path": "defaultskin/back/char_245_cello.atlas",
+        "bytes": 5723,
+        "referencedPngs": [
+          {
+            "name": "char_245_cello.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_245_cello/defaultskin/back/char_245_cello.png",
+            "path": "defaultskin/back/char_245_cello.png",
+            "bytes": 69147
+          }
+        ]
+      }
+    },
+    {
+      "skin": "默认",
+      "direction": "build",
+      "relativeStem": "defaultskin/build/build_char_245_cello",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_245_cello/defaultskin/build/build_char_245_cello.skel",
+        "path": "defaultskin/build/build_char_245_cello.skel",
+        "bytes": 214353
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_245_cello/defaultskin/build/build_char_245_cello.atlas",
+        "path": "defaultskin/build/build_char_245_cello.atlas",
+        "bytes": 9227,
+        "referencedPngs": [
+          {
+            "name": "build_char_245_cello.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_245_cello/defaultskin/build/build_char_245_cello.png",
+            "path": "defaultskin/build/build_char_245_cello.png",
+            "bytes": 140764
+          }
+        ]
+      }
+    },
+    {
+      "skin": "无我唯识",
+      "direction": "front",
+      "relativeStem": "char_245_cello_sale_12/front/char_245_cello_sale_12",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_245_cello/char_245_cello_sale_12/front/char_245_cello_sale_12.skel",
+        "path": "char_245_cello_sale_12/front/char_245_cello_sale_12.skel",
+        "bytes": 380033
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_245_cello/char_245_cello_sale_12/front/char_245_cello_sale_12.atlas",
+        "path": "char_245_cello_sale_12/front/char_245_cello_sale_12.atlas",
+        "bytes": 9572,
+        "referencedPngs": [
+          {
+            "name": "char_245_cello_sale_12.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_245_cello/char_245_cello_sale_12/front/char_245_cello_sale_12.png",
+            "path": "char_245_cello_sale_12/front/char_245_cello_sale_12.png",
+            "bytes": 131711
+          }
+        ]
+      }
+    },
+    {
+      "skin": "无我唯识",
+      "direction": "back",
+      "relativeStem": "char_245_cello_sale_12/back/char_245_cello_sale_12",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_245_cello/char_245_cello_sale_12/back/char_245_cello_sale_12.skel",
+        "path": "char_245_cello_sale_12/back/char_245_cello_sale_12.skel",
+        "bytes": 275579
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_245_cello/char_245_cello_sale_12/back/char_245_cello_sale_12.atlas",
+        "path": "char_245_cello_sale_12/back/char_245_cello_sale_12.atlas",
+        "bytes": 6231,
+        "referencedPngs": [
+          {
+            "name": "char_245_cello_sale_12.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_245_cello/char_245_cello_sale_12/back/char_245_cello_sale_12.png",
+            "path": "char_245_cello_sale_12/back/char_245_cello_sale_12.png",
+            "bytes": 117094
+          }
+        ]
+      }
+    },
+    {
+      "skin": "无我唯识",
+      "direction": "build",
+      "relativeStem": "char_245_cello_sale_12/build/build_char_245_cello_sale_12",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_245_cello/char_245_cello_sale_12/build/build_char_245_cello_sale_12.skel",
+        "path": "char_245_cello_sale_12/build/build_char_245_cello_sale_12.skel",
+        "bytes": 339416
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_245_cello/char_245_cello_sale_12/build/build_char_245_cello_sale_12.atlas",
+        "path": "char_245_cello_sale_12/build/build_char_245_cello_sale_12.atlas",
+        "bytes": 14425,
+        "referencedPngs": [
+          {
+            "name": "build_char_245_cello_sale_12.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_245_cello/char_245_cello_sale_12/build/build_char_245_cello_sale_12.png",
+            "path": "char_245_cello_sale_12/build/build_char_245_cello_sale_12.png",
+            "bytes": 479246
+          }
+        ]
+      }
+    }
+  ]
+}

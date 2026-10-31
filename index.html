@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ark HD-2D · Three.js Spine 场景</title>
+  <link rel="stylesheet" href="./src/styles.css" />
+</head>
+<body>
+  <div id="scene-root"></div>
+  <div id="labels"></div>
+  <div class="hud">
+    <div class="hud-title">ARKNIGHTS · HD-2D</div>
+    <div class="hud-subtitle">四人庭院 · HD-2D</div>
+    <div id="asset-status" class="asset-status">正在加载角色帧动画…</div>
+  </div>
+  <div class="hud-right">
+    <button id="focus-button">聚焦角色</button>
+    <button id="reset-button">重置视角</button>
+  </div>
+  <div id="character-roster" class="character-roster" aria-label="干员队伍"></div>
+  <div class="control-hint">WASD / 方向键移动 · Shift 加速 · 1–4 切换干员 · 空格暂停</div>
+  <div class="animation-controls" aria-label="角色动作">
+    <button data-action="idle" class="active">待机</button>
+    <button data-action="attack">攻击</button>
+    <button data-action="skill1">技能 1</button>
+    <button data-action="skill2">技能 2</button>
+    <button data-action="skill3">技能 3</button>
+    <button id="pause-button">暂停</button>
+    <span id="motion-status">待机</span>
+  </div>
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>

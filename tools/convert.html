@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>Spine → PNG 图集转换工具</title></head>
+<body>
+  <p id="status">正在加载本地 Spine 源文件…</p>
+  <script src="/vendor/spine38/spine-webgl.js"></script>
+  <script>
+    const modelCache = new Map();
+
+    async function loadSpineModel(config) {
+      const cacheKey = `${config.sourceRoot}|${config.skeleton}|${config.atlas}`;
+      if (modelCache.has(cacheKey)) return modelCache.get(cacheKey);
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = 2;
+      const gl = canvas.getContext('webgl', {
+        alpha: true, premultipliedAlpha: true, preserveDrawingBuffer: true,
+        antialias: true, depth: false, stencil: false,
+      });
+      if (!gl) throw new Error('转换需要 WebGL');
+      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+      const renderer = new spine.webgl.SceneRenderer(canvas, gl);
+      const assets = new spine.webgl.AssetManager(gl, config.sourceRoot);
+      assets.loadBinary(config.skeleton);
+      assets.loadTextureAtlas(config.atlas);
+      await new Promise((resolve, reject) => {
+        const deadline = performance.now() + 30000;
+        const check = () => {
+          if (assets.hasErrors()) return reject(new Error(JSON.stringify(assets.getErrors())));
+          if (assets.isLoadingComplete()) return resolve();
+          if (performance.now() > deadline) return reject(new Error('源文件读取超时'));
+          setTimeout(check, 20);
+        };
+        check();
+      });
+      const atlasText = await fetch(config.sourceRoot + config.atlas).then(response => {
+        if (!response.ok) throw new Error(`atlas HTTP ${response.status}`);
+        return response.text();
+      });
+      const declaredPages = [...atlasText.matchAll(/^([^\r\n]+\.png)\r?\nsize:\s*(\d+)\s*,\s*(\d+)/gm)];
+      const atlas = assets.get(config.atlas);
+      for (const match of declaredPages) {
+        const page = atlas.pages.find(page => page.name === match[1].trim());
+        const image = page?.texture.getImage();
+        if (!image || image.width !== Number(match[2]) || image.height !== Number(match[3])) {
+          assets.dispose();
+          renderer.dispose();
+          gl.getExtension('WEBGL_lose_context')?.loseContext();
+          throw new Error(`${config.skeleton}: ${match[1]} 纹理尺寸与 atlas 不符，请先运行 tools/normalize-atlas-images.mjs`);
+        }
+      }
+      const binary = new spine.SkeletonBinary(new spine.AtlasAttachmentLoader(atlas));
+      const data = binary.readSkeletonData(assets.get(config.skeleton));
+      const model = { canvas, gl, renderer, assets, data };
+      modelCache.set(cacheKey, model);
+      return model;
+    }
+
+    window.inspectModel = async function (config) {
+      const model = await loadSpineModel(config);
+      const skeleton = new spine.Skeleton(model.data);
+      const attachments = skeleton.slots.slice(0, 12).map(slot => ({
+        name: slot.data.name,
+        attachment: slot.getAttachment()?.name || null,
+        bone: slot.bone.data.name,
+      }));
+      return {
+        animations: model.data.animations.map(animation => ({ name: animation.name, duration: animation.duration })),
+        bones: model.data.bones.length,
+        skins: model.data.skins.map(skin => skin.name),
+        defaultSkin: model.data.defaultSkin?.name || null,
+        slots: attachments,
+      };
+    };
+
+    window.disposeModels = function () {
+      for (const model of modelCache.values()) {
+        model.assets.dispose();
+        model.renderer.dispose();
+        model.gl.getExtension('WEBGL_lose_context')?.loseContext();
+      }
+      modelCache.clear();
+    };
+
+    window.convertAnimation = async function (config, animationName) {
+      const cellSize = config.cellSize || 320;
+      const fps = config.fps || 30;
+      const model = await loadSpineModel(config);
+      const { canvas, gl, renderer, data } = model;
+      canvas.width = canvas.height = cellSize;
+      const animation = data.findAnimation(animationName);
+      if (!animation) throw new Error(`没有动作 ${animationName}`);
+      const skeleton = new spine.Skeleton(data);
+      if (data.defaultSkin) skeleton.setSkin(data.defaultSkin);
+      skeleton.setSlotsToSetupPose();
+      const state = new spine.AnimationState(new spine.AnimationStateData(data));
+      const count = Math.max(1, Math.ceil(animation.duration * fps - 1e-4));
+      const pageSize = 64;
+      const pages = [];
+      const offset = new spine.Vector2();
+      const size = new spine.Vector2();
+      const bounds = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
+      function setFrame(index) {
+        skeleton.setToSetupPose();
+        state.setAnimation(0, animationName, false);
+        const track = state.getCurrent(0);
+        track.trackTime = index / fps;
+        state.update(0);
+        state.apply(skeleton);
+        skeleton.updateWorldTransform();
+      }
+      for (let i = 0; i < count; i++) {
+        setFrame(i);
+        skeleton.getBounds(offset, size, []);
+        bounds.minX = Math.min(bounds.minX, offset.x);
+        bounds.minY = Math.min(bounds.minY, offset.y);
+        bounds.maxX = Math.max(bounds.maxX, offset.x + size.x);
+        bounds.maxY = Math.max(bounds.maxY, offset.y + size.y);
+      }
+      const visibleWidth = bounds.maxX - bounds.minX;
+      const visibleHeight = bounds.maxY - bounds.minY;
+      const worldSide = Math.max(visibleWidth, visibleHeight) * 1.08 || 1;
+      const cx = (bounds.minX + bounds.maxX) / 2;
+      const cy = (bounds.minY + bounds.maxY) / 2;
+      renderer.camera.setViewport(worldSide, worldSide);
+      renderer.camera.position.set(cx, cy, 0);
+      gl.viewport(0, 0, cellSize, cellSize);
+      for (let start = 0; start < count; start += pageSize) {
+        const pageFrames = Math.min(pageSize, count - start);
+        const columns = Math.min(8, pageFrames);
+        const rows = Math.ceil(pageFrames / columns);
+        const sheet = document.createElement('canvas');
+        sheet.width = columns * cellSize;
+        sheet.height = rows * cellSize;
+        const ctx = sheet.getContext('2d');
+        for (let local = 0; local < pageFrames; local++) {
+          setFrame(start + local);
+          gl.clearColor(0, 0, 0, 0);
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          renderer.begin();
+          renderer.drawSkeleton(skeleton, true);
+          renderer.end();
+          ctx.drawImage(canvas, (local % columns) * cellSize, Math.floor(local / columns) * cellSize);
+        }
+        pages.push({ png: sheet.toDataURL('image/png').split(',')[1], startFrame: start, frames: pageFrames, columns, rows });
+      }
+      const metadata = {
+        animation: animationName, fps, frames: count, duration: animation.duration,
+        worldSide, visibleWidth, visibleHeight, bodyHeight: config.bodyHeight || visibleHeight,
+        groundY: config.groundY ?? 0, center: { x: cx, y: cy }, bounds,
+        pivot: { x: 0.5 - cx / worldSide, y: 0.5 - cy / worldSide },
+        cellSize, availableAnimations: data.animations.map(a => a.name),
+      };
+      document.getElementById('status').textContent = `${config.character} / ${animationName}: ${count} 帧`;
+      return { metadata, pages };
+    };
+  </script>
+</body>
+</html>
