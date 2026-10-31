@@ -46,6 +46,8 @@ npm run dev
 
 页面运行时的核心流程是：manifest 描述动画分页，`Character` 按帧切换透明 PNG 图集，Three.js 负责角色移动、相机跟随、景深焦点和动作状态；GitHub Actions 负责构建 `dist/` 并发布到 Pages。
 
+GitHub Pages 部署文件位于 `.github/workflows/deploy-pages.yml`。它会在 `main` 更新后执行 `npm ci`、`npm run build`，再把 `dist/` 上传为 Pages artifact。Vite 使用相对 base，因而同一份构建产物可以在本地根路径和 GitHub 项目子路径运行。
+
 ## 角色资源
 
 四名角色的源模型位于 `public/assets/char_*_source/`，每个角色包含 PRTS 已验证的默认、皮肤和 front/back/build Spine 资源；运行时动作包位于 `public/assets/characters/<id>/`：
