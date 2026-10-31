@@ -1,0 +1,219 @@
+{
+  "character": "黍",
+  "id": "char_2025_shu",
+  "baseUrl": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/",
+  "meta": {
+    "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/meta.json",
+    "path": "meta.json",
+    "bytes": 714
+  },
+  "models": [
+    {
+      "skin": "默认",
+      "direction": "front",
+      "relativeStem": "defaultskin/front/char_2025_shu",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/defaultskin/front/char_2025_shu.skel",
+        "path": "defaultskin/front/char_2025_shu.skel",
+        "bytes": 522905
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/defaultskin/front/char_2025_shu.atlas",
+        "path": "defaultskin/front/char_2025_shu.atlas",
+        "bytes": 12326,
+        "referencedPngs": [
+          {
+            "name": "char_2025_shu.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/defaultskin/front/char_2025_shu.png",
+            "path": "defaultskin/front/char_2025_shu.png",
+            "bytes": 141603
+          }
+        ]
+      }
+    },
+    {
+      "skin": "默认",
+      "direction": "back",
+      "relativeStem": "defaultskin/back/char_2025_shu",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/defaultskin/back/char_2025_shu.skel",
+        "path": "defaultskin/back/char_2025_shu.skel",
+        "bytes": 327042
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/defaultskin/back/char_2025_shu.atlas",
+        "path": "defaultskin/back/char_2025_shu.atlas",
+        "bytes": 8590,
+        "referencedPngs": [
+          {
+            "name": "char_2025_shu.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/defaultskin/back/char_2025_shu.png",
+            "path": "defaultskin/back/char_2025_shu.png",
+            "bytes": 128811
+          }
+        ]
+      }
+    },
+    {
+      "skin": "默认",
+      "direction": "build",
+      "relativeStem": "defaultskin/build/build_char_2025_shu",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/defaultskin/build/build_char_2025_shu.skel",
+        "path": "defaultskin/build/build_char_2025_shu.skel",
+        "bytes": 319173
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/defaultskin/build/build_char_2025_shu.atlas",
+        "path": "defaultskin/build/build_char_2025_shu.atlas",
+        "bytes": 12400,
+        "referencedPngs": [
+          {
+            "name": "build_char_2025_shu.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/defaultskin/build/build_char_2025_shu.png",
+            "path": "defaultskin/build/build_char_2025_shu.png",
+            "bytes": 236527
+          }
+        ]
+      }
+    },
+    {
+      "skin": "春日宴",
+      "direction": "front",
+      "relativeStem": "char_2025_shu_nian_11/front/char_2025_shu_nian_11",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/char_2025_shu_nian_11/front/char_2025_shu_nian_11.skel",
+        "path": "char_2025_shu_nian_11/front/char_2025_shu_nian_11.skel",
+        "bytes": 561178
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/char_2025_shu_nian_11/front/char_2025_shu_nian_11.atlas",
+        "path": "char_2025_shu_nian_11/front/char_2025_shu_nian_11.atlas",
+        "bytes": 17166,
+        "referencedPngs": [
+          {
+            "name": "char_2025_shu_nian_11.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/char_2025_shu_nian_11/front/char_2025_shu_nian_11.png",
+            "path": "char_2025_shu_nian_11/front/char_2025_shu_nian_11.png",
+            "bytes": 177413
+          }
+        ]
+      }
+    },
+    {
+      "skin": "春日宴",
+      "direction": "back",
+      "relativeStem": "char_2025_shu_nian_11/back/char_2025_shu_nian_11",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/char_2025_shu_nian_11/back/char_2025_shu_nian_11.skel",
+        "path": "char_2025_shu_nian_11/back/char_2025_shu_nian_11.skel",
+        "bytes": 320545
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/char_2025_shu_nian_11/back/char_2025_shu_nian_11.atlas",
+        "path": "char_2025_shu_nian_11/back/char_2025_shu_nian_11.atlas",
+        "bytes": 10119,
+        "referencedPngs": [
+          {
+            "name": "char_2025_shu_nian_11.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/char_2025_shu_nian_11/back/char_2025_shu_nian_11.png",
+            "path": "char_2025_shu_nian_11/back/char_2025_shu_nian_11.png",
+            "bytes": 126277
+          }
+        ]
+      }
+    },
+    {
+      "skin": "春日宴",
+      "direction": "build",
+      "relativeStem": "char_2025_shu_nian_11/build/build_char_2025_shu_nian_11",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/char_2025_shu_nian_11/build/build_char_2025_shu_nian_11.skel",
+        "path": "char_2025_shu_nian_11/build/build_char_2025_shu_nian_11.skel",
+        "bytes": 484495
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/char_2025_shu_nian_11/build/build_char_2025_shu_nian_11.atlas",
+        "path": "char_2025_shu_nian_11/build/build_char_2025_shu_nian_11.atlas",
+        "bytes": 18012,
+        "referencedPngs": [
+          {
+            "name": "build_char_2025_shu_nian_11.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/char_2025_shu_nian_11/build/build_char_2025_shu_nian_11.png",
+            "path": "char_2025_shu_nian_11/build/build_char_2025_shu_nian_11.png",
+            "bytes": 316372
+          }
+        ]
+      }
+    },
+    {
+      "skin": "源远流长",
+      "direction": "front",
+      "relativeStem": "char_2025_shu_nlc_1/front/char_2025_shu_nlc_1",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/char_2025_shu_nlc_1/front/char_2025_shu_nlc_1.skel",
+        "path": "char_2025_shu_nlc_1/front/char_2025_shu_nlc_1.skel",
+        "bytes": 490793
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/char_2025_shu_nlc_1/front/char_2025_shu_nlc_1.atlas",
+        "path": "char_2025_shu_nlc_1/front/char_2025_shu_nlc_1.atlas",
+        "bytes": 12085,
+        "referencedPngs": [
+          {
+            "name": "char_2025_shu_nlc_1.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/char_2025_shu_nlc_1/front/char_2025_shu_nlc_1.png",
+            "path": "char_2025_shu_nlc_1/front/char_2025_shu_nlc_1.png",
+            "bytes": 158385
+          }
+        ]
+      }
+    },
+    {
+      "skin": "源远流长",
+      "direction": "back",
+      "relativeStem": "char_2025_shu_nlc_1/back/char_2025_shu_nlc_1",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/char_2025_shu_nlc_1/back/char_2025_shu_nlc_1.skel",
+        "path": "char_2025_shu_nlc_1/back/char_2025_shu_nlc_1.skel",
+        "bytes": 292380
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/char_2025_shu_nlc_1/back/char_2025_shu_nlc_1.atlas",
+        "path": "char_2025_shu_nlc_1/back/char_2025_shu_nlc_1.atlas",
+        "bytes": 8137,
+        "referencedPngs": [
+          {
+            "name": "char_2025_shu_nlc_1.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/char_2025_shu_nlc_1/back/char_2025_shu_nlc_1.png",
+            "path": "char_2025_shu_nlc_1/back/char_2025_shu_nlc_1.png",
+            "bytes": 142001
+          }
+        ]
+      }
+    },
+    {
+      "skin": "源远流长",
+      "direction": "build",
+      "relativeStem": "char_2025_shu_nlc_1/build/build_char_2025_shu_nlc_1",
+      "skel": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/char_2025_shu_nlc_1/build/build_char_2025_shu_nlc_1.skel",
+        "path": "char_2025_shu_nlc_1/build/build_char_2025_shu_nlc_1.skel",
+        "bytes": 612866
+      },
+      "atlas": {
+        "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/char_2025_shu_nlc_1/build/build_char_2025_shu_nlc_1.atlas",
+        "path": "char_2025_shu_nlc_1/build/build_char_2025_shu_nlc_1.atlas",
+        "bytes": 16902,
+        "referencedPngs": [
+          {
+            "name": "build_char_2025_shu_nlc_1.png",
+            "url": "https://torappu.prts.wiki/assets/char_spine/char_2025_shu/char_2025_shu_nlc_1/build/build_char_2025_shu_nlc_1.png",
+            "path": "char_2025_shu_nlc_1/build/build_char_2025_shu_nlc_1.png",
+            "bytes": 376004
+          }
+        ]
+      }
+    }
+  ]
+}
