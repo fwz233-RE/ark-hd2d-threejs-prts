@@ -2,6 +2,18 @@
 
 这是一个纯 Three.js 的 HD-2D 场景：程序化地面、透视相机、AlphaTest 景深、接触阴影、四名干员和 Spine 3.8 模型转换出的透明分页帧图集。网页运行时只加载 Three.js 和本地帧图集，不依赖 Spine runtime 或远程 PRTS 请求。
 
+## 在线体验
+
+GitHub Pages 会在 `main` 分支更新后自动构建和部署：
+
+**[打开在线场景](https://fwz233-re.github.io/ark-hd2d-threejs-prts/)**
+
+> 首次打开需要等待角色帧图集加载完成。页面使用 Git LFS 存储大型 PNG 和 Spine 源文件。
+
+![四人庭院全景](docs/images/courtyard.jpg)
+
+![聚焦角色和动作控制](docs/images/operator-closeup.jpg)
+
 ## 启动
 
 ```bash
@@ -20,6 +32,19 @@ npm run dev
 - 右下角：播放攻击、技能 1、技能 2、技能 3；动作包含真实的起手、循环和收招片段（模型提供时）。
 - `空格` 或“暂停”：冻结当前帧和移动。
 - “聚焦角色 / 重置视角”：切换镜头距离。
+
+## 实现结构
+
+```text
+浏览器
+  └─ Vite / GitHub Pages
+      ├─ Three.js 场景、灯光、相机和程序化庭院
+      ├─ AlphaTest 深度景深后处理
+      ├─ Billboard 帧图集角色播放器
+      └─ PNG / Spine 3.8 资源由 Git LFS 管理
+```
+
+页面运行时的核心流程是：manifest 描述动画分页，`Character` 按帧切换透明 PNG 图集，Three.js 负责角色移动、相机跟随、景深焦点和动作状态；GitHub Actions 负责构建 `dist/` 并发布到 Pages。
 
 ## 角色资源
 

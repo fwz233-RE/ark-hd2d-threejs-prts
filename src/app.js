@@ -6,6 +6,7 @@ import { Character } from './Character.js';
 import { createStage } from './stage.js';
 
 const characterIds = ['char_1041_angel2', 'char_1050_chen3', 'char_2025_shu', 'char_245_cello'];
+const assetBase = import.meta.env.BASE_URL;
 const actionLabels = { idle: '待机', move: '行走', attack: '攻击', skill1: '技能 1', skill2: '技能 2', skill3: '技能 3' };
 const status = document.getElementById('asset-status');
 const labelsRoot = document.getElementById('labels');
@@ -110,7 +111,7 @@ function selectCharacter(index) {
 async function initialize() {
   status.textContent = '正在加载四名干员的待机与行走动作…';
   const manifests = await Promise.all(characterIds.map(async id => {
-    const response = await fetch(`/assets/characters/${id}/manifest.json`);
+    const response = await fetch(`${assetBase}assets/characters/${id}/manifest.json`);
     if (!response.ok) throw new Error(`${id} HTTP ${response.status}`);
     return response.json();
   }));

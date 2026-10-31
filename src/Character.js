@@ -3,6 +3,7 @@ import * as THREE from 'three';
 const loader = new THREE.TextureLoader();
 const clipCache = new Map();
 const actions = new Set(['idle', 'move', 'attack', 'skill1', 'skill2', 'skill3']);
+const assetBase = import.meta.env.BASE_URL;
 
 function loadClip(role, key) {
   const cacheKey = `${role.id}/${key}`;
@@ -10,7 +11,7 @@ function loadClip(role, key) {
     const data = role.manifest.animations[key];
     if (!data?.pages?.length) return Promise.reject(new Error(`${role.name}: 缺少分页动画 ${key}`));
     const promise = Promise.all(data.pages.map(async page => {
-      const texture = await loader.loadAsync(`/assets/characters/${role.id}/${page.image}`);
+      const texture = await loader.loadAsync(`${assetBase}assets/characters/${role.id}/${page.image}`);
       texture.colorSpace = THREE.SRGBColorSpace;
       texture.generateMipmaps = false;
       texture.minFilter = texture.magFilter = THREE.LinearFilter;
