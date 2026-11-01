@@ -62,9 +62,9 @@ export function createStage(scene) {
       }
     }
   });
-  bricks.repeat.set(5.5, 6);
+  bricks.repeat.set(7, 9);
   const paving = material('#ffffff', { map: bricks, bumpMap: bricks, bumpScale: 0.028 });
-  box(paving, 0, -0.18, -1, 22, 0.36, 24);
+  box(paving, 0, -0.18, 2, 28, 0.36, 36);
   // A repeating four-tile quatrefoil: colors and the engraved normal share one drawing.
   function drawTiles(ctx, s, relief = false) {
     ctx.fillStyle = relief ? '#a0a0a0' : '#dab48a'; ctx.fillRect(0, 0, s, s);
@@ -107,24 +107,24 @@ export function createStage(scene) {
   }
   const normalMap = new THREE.DataTexture(normals, 512, 512);
   normalMap.wrapS = normalMap.wrapT = THREE.RepeatWrapping; normalMap.needsUpdate = true;
-  tiles.repeat.set(3, 3); normalMap.repeat.copy(tiles.repeat);
+  tiles.repeat.set(4, 4.8); normalMap.repeat.copy(tiles.repeat);
   const inlay = material('#ffffff', { map: tiles, normalMap, normalScale: new THREE.Vector2(0.55, 0.55) });
-  box(stone, 0, 0.045, 0, 11.2, 0.09, 10.2);
-  const carpet = new THREE.Mesh(new THREE.PlaneGeometry(11, 10), inlay);
+  box(stone, 0, 0.045, 0, 14.6, 0.09, 17.2);
+  const carpet = new THREE.Mesh(new THREE.PlaneGeometry(14.4, 17), inlay);
   carpet.rotation.x = -Math.PI / 2; carpet.position.y = 0.12;
   carpet.receiveShadow = true; stage.add(carpet);
   relief.dispose();
-  for (const x of [-5.7, 5.7]) {
-    box(wood, x, 0.075, 0, 0.38, 0.15, 10.6);
-    box(cream, x, 0.17, 0, 0.36, 0.12, 10.7, true);
-    box(brass, x, 0.234, 0, 0.035, 0.008, 10.35);
+  for (const x of [-7.4, 7.4]) {
+    box(wood, x, 0.075, 0, 0.38, 0.15, 17.6);
+    box(cream, x, 0.17, 0, 0.36, 0.12, 17.7, true);
+    box(brass, x, 0.234, 0, 0.035, 0.008, 17.35);
   }
-  for (const z of [-5.3, 5.3]) {
-    box(wood, 0, 0.075, z, 11.8, 0.15, 0.38);
-    box(cream, 0, 0.17, z, 11.8, 0.12, 0.36, true);
-    box(brass, 0, 0.234, z, 11.4, 0.008, 0.035);
+  for (const z of [-8.8, 8.8]) {
+    box(wood, 0, 0.075, z, 15.2, 0.15, 0.38);
+    box(cream, 0, 0.17, z, 15.2, 0.12, 0.36, true);
+    box(brass, 0, 0.234, z, 14.8, 0.008, 0.035);
   }
-  for (const x of [-6.9, 6.9]) box(cream, x, 0.008, -1, 0.07, 0.016, 24);
+  for (const x of [-8.6, 8.6]) box(cream, x, 0.008, 2, 0.07, 0.016, 36);
   box(stone, 0, 0.25, -9.9, 22, 0.5, 2.2);
   box(cream, 0, 0.52, -8.85, 22, 0.09, 0.18, true);
   box(wood, 0, 2.1, -11.2, 22, 4.2, 0.4);

@@ -15,26 +15,27 @@ const motionStatus = document.getElementById('motion-status');
 const pauseButton = document.getElementById('pause-button');
 const actionButtons = [...document.querySelectorAll('[data-action]')];
 const scene = new THREE.Scene();
-const characterScene = new THREE.Scene();
 scene.background = new THREE.Color('#827778');
 scene.fog = new THREE.Fog('#827778', 25, 55);
 
 const camera = new THREE.PerspectiveCamera(39, innerWidth / innerHeight, 0.1, 80);
 const initialPosition = new THREE.Vector3(0, 0.16, 2.8);
 const cameraOffset = new THREE.Vector3(0, 8.24, 12.8);
-const focusOffset = new THREE.Vector3(0, 5.14, 8);
+const lensFocusDistance = cameraOffset.length() - 0.6;
 const targetOffset = new THREE.Vector3(0, 0.94, -3.6);
-const focusTargetOffset = new THREE.Vector3(0, 1.2, -1.8);
 const destination = initialPosition.clone().add(cameraOffset);
 const lookTarget = initialPosition.clone().add(targetOffset);
 camera.position.copy(destination);
 camera.lookAt(lookTarget);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.15));
 renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type = THREE.PCFShadowMap;
+// Only the static courtyard casts shadow-map shadows; sprites use contact shadows.
+renderer.shadowMap.autoUpdate = false;
+renderer.shadowMap.needsUpdate = true;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
@@ -43,14 +44,19 @@ scene.add(new THREE.HemisphereLight('#e1efff', '#9d7970', 2.5));
 const sunlight = new THREE.DirectionalLight('#ffe0b9', 3.2);
 sunlight.position.set(-6, 13, 7);
 sunlight.castShadow = true;
-sunlight.shadow.mapSize.set(2048, 2048);
+sunlight.shadow.mapSize.set(1024, 1024);
 Object.assign(sunlight.shadow.camera, { left: -14, right: 14, top: 14, bottom: -14, far: 45 });
 sunlight.shadow.normalBias = 0.03;
 sunlight.shadow.bias = -0.0001;
 scene.add(sunlight);
 createStage(scene);
 const composer = new EffectComposer(renderer);
-const dof = new AlphaBokehPass(scene, camera, characterScene, { focus: 15, aperture: 0.0016, maxblur: 0.009 });
+const dof = new AlphaBokehPass(scene, camera, {
+  focus: lensFocusDistance,
+  aperture: 0.00125,
+  maxblur: 0.007,
+  renderScale: 0.5,
+});
 composer.addPass(dof);
 composer.addPass(new OutputPass());
 
@@ -72,12 +78,11 @@ const velocity = new THREE.Vector3();
 const desiredVelocity = new THREE.Vector3();
 const previousPosition = new THREE.Vector3();
 const targetPosition = new THREE.Vector3();
-const cameraSpaceFocus = new THREE.Vector3();
+const cameraAnchor = initialPosition.clone();
 const clock = new THREE.Clock();
 let player;
 let selectedIndex = 0;
 let paused = false;
-let focused = false;
 let ready = false;
 let lastState = '';
 
@@ -118,7 +123,7 @@ async function initialize() {
   const positions = [[0, 0.16, 2.8], [-2.8, 0.16, 0.6], [2.7, 0.16, -0.2], [-1.4, 0.16, -3.5]];
   manifests.forEach((manifest, index) => {
     const role = { id: manifest.id, name: manifest.name, manifest };
-    const character = new Character({ role, position: positions[index], scene: characterScene, labelsRoot, shadowTexture, onError: reportError });
+    const character = new Character({ role, position: positions[index], scene, labelsRoot, shadowTexture, renderer, onError: reportError });
     characters.push(character);
     const button = document.createElement('button');
     button.className = 'character-button';
@@ -160,8 +165,6 @@ function playAction(action) {
   else void player.playAction(action);
 }
 
-document.getElementById('focus-button').addEventListener('click', () => { focused = true; });
-document.getElementById('reset-button').addEventListener('click', () => { focused = false; });
 pauseButton.addEventListener('click', togglePause);
 actionButtons.forEach(button => button.addEventListener('click', () => playAction(button.dataset.action)));
 const movementKeys = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight', 'ShiftLeft', 'ShiftRight']);
@@ -203,23 +206,21 @@ renderer.setAnimationLoop(() => {
     if (velocity.lengthSq() < 0.001) velocity.set(0, 0, 0);
     previousPosition.copy(player.group.position);
     player.group.position.addScaledVector(velocity, delta);
-    player.group.position.x = THREE.MathUtils.clamp(player.group.position.x, -4.8, 4.8);
-    player.group.position.z = THREE.MathUtils.clamp(player.group.position.z, -4.3, 4.2);
+    player.group.position.x = THREE.MathUtils.clamp(player.group.position.x, -6.3, 6.3);
+    player.group.position.z = THREE.MathUtils.clamp(player.group.position.z, -7.3, 7.3);
     const moving = player.group.position.distanceToSquared(previousPosition) > 0.0000001;
     player.setMoving(moving, velocity.x, speed / 2.1);
   }
   const anchor = player ? player.group.position : initialPosition;
-  destination.copy(anchor).add(focused ? focusOffset : cameraOffset);
-  targetPosition.copy(anchor).add(focused ? focusTargetOffset : targetOffset);
-  const cameraBlend = 1 - Math.exp(-5 * delta);
+  // Partial follow leaves room for walking through the camera's focal plane.
+  cameraAnchor.copy(initialPosition).lerp(anchor, 0.75);
+  destination.copy(cameraAnchor).add(cameraOffset);
+  targetPosition.copy(cameraAnchor).add(targetOffset);
+  const cameraBlend = paused ? 0 : 1 - Math.exp(-5 * delta);
   camera.position.lerp(destination, cameraBlend);
   lookTarget.lerp(targetPosition, cameraBlend);
   camera.lookAt(lookTarget);
   camera.updateMatrixWorld();
-  cameraSpaceFocus.copy(anchor);
-  cameraSpaceFocus.y += 1.5;
-  cameraSpaceFocus.applyMatrix4(camera.matrixWorldInverse);
-  dof.uniforms.focus.value = THREE.MathUtils.lerp(dof.uniforms.focus.value, Math.max(0.1, -cameraSpaceFocus.z), 1 - Math.exp(-8 * delta));
   characters.forEach(character => character.update(delta, camera, paused));
   if (player) {
     const state = paused ? 'paused' : player.playbackState;

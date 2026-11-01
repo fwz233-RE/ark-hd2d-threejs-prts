@@ -64,15 +64,6 @@ body {
   color: #ff8a8a;
 }
 
-.hud-right {
-  position: fixed;
-  top: 28px;
-  right: 32px;
-  z-index: 2;
-  display: flex;
-  gap: 8px;
-}
-
 button {
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 5px;
@@ -224,13 +215,6 @@ button:hover {
   .hud {
     top: 16px;
     left: 16px;
-  }
-
-  .hud-right {
-    top: 16px;
-    right: 16px;
-    flex-direction: column;
-    align-items: flex-end;
   }
 
   .control-hint {
