@@ -15,14 +15,13 @@ const motionStatus = document.getElementById('motion-status');
 const pauseButton = document.getElementById('pause-button');
 const actionButtons = [...document.querySelectorAll('[data-action]')];
 const scene = new THREE.Scene();
-scene.background = new THREE.Color('#827778');
-scene.fog = new THREE.Fog('#827778', 25, 55);
+scene.background = new THREE.Color('#393c43');
+scene.fog = new THREE.Fog('#393c43', 32, 65);
 
 const camera = new THREE.PerspectiveCamera(39, innerWidth / innerHeight, 0.1, 80);
 const initialPosition = new THREE.Vector3(0, 0.16, 2.8);
-const cameraOffset = new THREE.Vector3(0, 8.24, 12.8);
-const lensFocusDistance = cameraOffset.length() - 0.6;
-const targetOffset = new THREE.Vector3(0, 0.94, -3.6);
+const cameraOffset = new THREE.Vector3(0, 6.8, 10.8);
+const targetOffset = new THREE.Vector3(0, 0.8, -2.4);
 const destination = initialPosition.clone().add(cameraOffset);
 const lookTarget = initialPosition.clone().add(targetOffset);
 camera.position.copy(destination);
@@ -38,10 +37,10 @@ renderer.shadowMap.autoUpdate = false;
 renderer.shadowMap.needsUpdate = true;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.15;
+renderer.toneMappingExposure = 1.05;
 document.getElementById('scene-root').appendChild(renderer.domElement);
-scene.add(new THREE.HemisphereLight('#e1efff', '#9d7970', 2.5));
-const sunlight = new THREE.DirectionalLight('#ffe0b9', 3.2);
+scene.add(new THREE.HemisphereLight('#dce8ff', '#79655d', 1.7));
+const sunlight = new THREE.DirectionalLight('#ffe0b9', 2.8);
 sunlight.position.set(-6, 13, 7);
 sunlight.castShadow = true;
 sunlight.shadow.mapSize.set(1024, 1024);
@@ -49,14 +48,13 @@ Object.assign(sunlight.shadow.camera, { left: -14, right: 14, top: 14, bottom: -
 sunlight.shadow.normalBias = 0.03;
 sunlight.shadow.bias = -0.0001;
 scene.add(sunlight);
-createStage(scene);
+const stage = createStage(scene);
 const composer = new EffectComposer(renderer);
 const dof = new AlphaBokehPass(scene, camera, {
-  focus: lensFocusDistance,
-  aperture: 0.00125,
-  maxblur: 0.007,
+  focus: 10.5,
   renderScale: 0.5,
 });
+dof.setViewport(innerWidth, innerHeight);
 composer.addPass(dof);
 composer.addPass(new OutputPass());
 
@@ -79,6 +77,12 @@ const desiredVelocity = new THREE.Vector3();
 const previousPosition = new THREE.Vector3();
 const targetPosition = new THREE.Vector3();
 const cameraAnchor = initialPosition.clone();
+const focusProbe = new THREE.Vector3(0, stage.userData.focusHeight ?? 0.12, 0.6);
+const focusSpace = new THREE.Vector3();
+const labelRay = new THREE.Raycaster();
+const labelTarget = new THREE.Vector3();
+const labelDirection = new THREE.Vector3();
+let labelOcclusionTime = 0;
 const clock = new THREE.Clock();
 let player;
 let selectedIndex = 0;
@@ -125,6 +129,7 @@ async function initialize() {
     const role = { id: manifest.id, name: manifest.name, manifest };
     const character = new Character({ role, position: positions[index], scene, labelsRoot, shadowTexture, renderer, onError: reportError });
     characters.push(character);
+    dof.addCharacter(character);
     const button = document.createElement('button');
     button.className = 'character-button';
     button.dataset.character = String(index);
@@ -193,6 +198,7 @@ addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
   composer.setSize(innerWidth, innerHeight);
+  dof.setViewport(innerWidth, innerHeight);
 });
 
 renderer.setAnimationLoop(() => {
@@ -214,14 +220,31 @@ renderer.setAnimationLoop(() => {
   const anchor = player ? player.group.position : initialPosition;
   // Partial follow leaves room for walking through the camera's focal plane.
   cameraAnchor.copy(initialPosition).lerp(anchor, 0.75);
-  destination.copy(cameraAnchor).add(cameraOffset);
+  const framingScale = THREE.MathUtils.clamp(0.95 / camera.aspect, 1, 1.9);
+  destination.copy(cameraAnchor).addScaledVector(cameraOffset, framingScale);
   targetPosition.copy(cameraAnchor).add(targetOffset);
   const cameraBlend = paused ? 0 : 1 - Math.exp(-5 * delta);
   camera.position.lerp(destination, cameraBlend);
   lookTarget.lerp(targetPosition, cameraBlend);
   camera.lookAt(lookTarget);
   camera.updateMatrixWorld();
+  focusSpace.copy(cameraAnchor).add(focusProbe).applyMatrix4(camera.matrixWorldInverse);
+  dof.setFocus(-focusSpace.z);
   characters.forEach(character => character.update(delta, camera, paused));
+  labelOcclusionTime += delta;
+  if (labelOcclusionTime >= 0.12) {
+    labelOcclusionTime = 0;
+    for (const character of characters) {
+      labelTarget.copy(character.group.position);
+      labelTarget.y += (character.role.manifest.targetHeight ?? 1.65) * 0.65;
+      labelDirection.subVectors(labelTarget, camera.position);
+      const distance = labelDirection.length();
+      labelRay.set(camera.position, labelDirection.normalize());
+      labelRay.far = Math.max(0, distance - 0.1);
+      const occluded = labelRay.intersectObject(stage, true).length > 0;
+      character.label.style.visibility = occluded ? 'hidden' : '';
+    }
+  }
   if (player) {
     const state = paused ? 'paused' : player.playbackState;
     if (state !== lastState) {
