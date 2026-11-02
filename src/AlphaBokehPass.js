@@ -216,7 +216,9 @@ export class AlphaBokehPass extends Pass {
     const material = character.material;
     // SRC_ALPHA blending onto zero stores P=alpha*C and A=alpha in the target.
     material.premultipliedAlpha = false;
+    const compileCharacter = material.onBeforeCompile;
     material.onBeforeCompile = shader => {
+      compileCharacter(shader);
       shader.uniforms.courtyardDepth = this._worldDepth;
       shader.uniforms.drawingSize = this._resolution;
       shader.fragmentShader = `uniform sampler2D courtyardDepth;\nuniform vec2 drawingSize;\n${shader.fragmentShader}`
@@ -225,7 +227,7 @@ export class AlphaBokehPass extends Pass {
           if (gl_FragCoord.z > courtyardZ + 0.000001) discard;
         `);
     };
-    material.customProgramCacheKey = () => 'courtyard-character-occlusion-v1';
+    material.customProgramCacheKey = () => 'courtyard-aligned-character-occlusion-v2';
     material.needsUpdate = true;
   }
 

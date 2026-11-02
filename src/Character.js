@@ -3,63 +3,44 @@ import * as THREE from 'three';
 const actions = new Set(['idle', 'move', 'attack', 'skill1', 'skill2', 'skill3']);
 const assetBase = import.meta.env.BASE_URL;
 const caches = new WeakMap();
-// At 2048px, four displayed pages plus four imminent pages fit in 256 MiB.
 const memoryBudget = 256 * 1024 * 1024;
 const maxPageDimension = 2048;
-// Serialize fetch/decode/upload too, so decoded images cannot accumulate behind uploads.
-const tasks = [];
-let running = false;
-function schedule(task) {
-  return new Promise((resolve, reject) => {
-    tasks.push({ task, resolve, reject });
-    if (!running) void drain();
-  });
-}
-async function drain() {
-  running = true;
-  while (tasks.length) {
-    const { task, resolve, reject } = tasks.shift();
-    try {
-      // The timer runs after the rendering callbacks of this animation frame.
-      await new Promise(done => requestAnimationFrame(() => setTimeout(done, 0)));
-      resolve(await task());
-    } catch (error) { reject(error); }
-  }
-  running = false;
-}
+const transitionDuration = 0.12;
 
+// Downloads have a reserved demand lane. Decode/upload is separate, one page per
+// rendered frame, so a slow background download never blocks a walking request.
 class PageCache {
   constructor(renderer) {
     this.renderer = renderer;
     this.pages = new Map();
     this.bytes = 0;
     this.clock = 0;
+    this.downloads = 0;
+    this.backgroundDownloads = 0;
+    this.uploading = false;
   }
 
   page(role, clip, index) {
-    const page = clip.data.pages[index];
-    const url = `${assetBase}assets/characters/${role.id}/${page.image}`;
+    const meta = clip.data.pages[index];
+    const url = `${assetBase}assets/characters/${role.id}/${meta.image}`;
     if (!this.pages.has(url)) {
-      const sourceWidth = page.columns * clip.data.cellSize;
-      const sourceHeight = page.rows * clip.data.cellSize;
-      const scale = Math.min(1, maxPageDimension / Math.max(sourceWidth, sourceHeight));
-      const width = Math.max(1, Math.round(sourceWidth * scale));
-      const height = Math.max(1, Math.round(sourceHeight * scale));
+      const scale = Math.min(1, maxPageDimension / Math.max(meta.columns, meta.rows) / clip.data.cellSize);
+      const width = Math.max(1, Math.round(meta.columns * clip.data.cellSize * scale));
+      const height = Math.max(1, Math.round(meta.rows * clip.data.cellSize * scale));
       this.pages.set(url, {
-        url, pins: new Set(), demands: new Set(), displayPins: new Set(),
-        width, height, estimate: width * height * 8,
-        texture: null, bitmap: null, bytes: 0,
-        used: 0, promise: null, retryAt: 0,
+        url, width, height, estimate: width * height * 8,
+        pins: new Set(), displayPins: new Set(), residentPins: new Set(), demands: new Set(),
+        texture: null, bitmap: null, bytes: 0, used: 0, retryAt: 0,
+        promise: null, phase: '', priority: 2, blob: null,
       });
     }
     return this.pages.get(url);
   }
 
-  trim(extra = 0, speculative = false) {
-    const candidates = [...this.pages.values()]
-      .filter(page => page.texture && !page.displayPins.size && !page.demands.size &&
-        (!speculative || !page.pins.size))
-      .sort((a, b) => a.used - b.used);
+  trim(extra = 0, demand = false) {
+    const candidates = [...this.pages.values()].filter(page => page.texture &&
+      !page.displayPins.size && !page.residentPins.size && !page.demands.size &&
+      (demand || !page.pins.size)).sort((a, b) => a.used - b.used);
     for (const page of candidates) {
       if (this.bytes + extra <= memoryBudget) break;
       page.texture.dispose();
@@ -68,64 +49,98 @@ class PageCache {
       page.texture = page.bitmap = null;
       page.bytes = 0;
     }
+    return this.bytes + extra <= memoryBudget;
   }
 
-  load(page) {
+  load(page, priority = 2) {
     page.used = ++this.clock;
     if (page.texture) return Promise.resolve(page);
-    if (page.promise) return page.promise;
-    page.promise = schedule(async () => {
-      if (!page.pins.size) return page;
-      // A speculative request must not evict another character's ready prefetch.
-      // Otherwise four one-page-ahead requests continually decode each other away.
-      this.trim(page.estimate, !page.demands.size);
-      // Wait for a ready page to be committed before admitting another over-budget
-      // page. Displayed pages are never sacrificed to make room for a request.
-      const waiting = [...this.pages.values()].some(other => other !== page &&
-        other.texture && other.pins.size && !other.displayPins?.size);
-      if (this.bytes + page.estimate > memoryBudget && (!page.demands.size || waiting)) return page;
-      const response = await fetch(page.url);
-      if (!response.ok) throw new Error(`${page.url} HTTP ${response.status}`);
-      const blob = await response.blob();
-      if (!page.pins.size) return page;
-      let bitmap;
-      let texture;
-      try {
-        bitmap = await createImageBitmap(blob, {
-          resizeWidth: page.width,
-          resizeHeight: page.height,
-          resizeQuality: 'high',
-          imageOrientation: 'flipY',
-          premultiplyAlpha: 'none',
-        });
-        if (!page.pins.size) { bitmap.close(); return page; }
-        const bytes = bitmap.width * bitmap.height * 8; // RGBA bitmap plus GPU storage.
-        this.trim(bytes, !page.demands.size);
-        texture = new THREE.Texture(bitmap);
-        texture.flipY = false; // ImageBitmap orientation was applied during decode.
-        texture.colorSpace = THREE.SRGBColorSpace;
-        texture.generateMipmaps = false;
-        texture.minFilter = texture.magFilter = THREE.LinearFilter;
-        texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
-        texture.needsUpdate = true;
-        // Decode may span several frames. Always upload after a fresh rendered frame.
-        await new Promise(done => requestAnimationFrame(() => setTimeout(done, 0)));
-        if (!page.pins.size) { texture.dispose(); bitmap.close(); return page; }
-        this.renderer.initTexture(texture);
-        Object.assign(page, { texture, bitmap, bytes });
-        this.bytes += bytes;
-        this.trim();
-        return page;
-      } catch (error) {
-        texture?.dispose();
-        bitmap?.close();
-        throw error;
-      }
-    }).catch(error => {
-      page.retryAt = performance.now() + 1000;
-      throw error;
-    }).finally(() => { page.promise = null; });
+    if (page.promise) {
+      page.priority = Math.min(page.priority, priority);
+    } else {
+      if (performance.now() < page.retryAt) return Promise.resolve(page);
+      page.priority = priority;
+      page.phase = 'queued';
+      page.promise = new Promise((resolve, reject) => { page.resolve = resolve; page.reject = reject; });
+    }
+    this.tick();
     return page.promise;
+  }
+
+  _finish(page, error) {
+    const { resolve, reject } = page;
+    page.promise = page.resolve = page.reject = null;
+    page.phase = '';
+    page.blob = null;
+    if (error) {
+      page.retryAt = performance.now() + 1000;
+      reject(error);
+    } else resolve(page);
+  }
+
+  tick() {
+    const queued = [...this.pages.values()].filter(page => page.phase === 'queued')
+      .sort((a, b) => a.priority - b.priority || a.used - b.used);
+    for (const page of queued) {
+      if (!page.pins.size) { this._finish(page); continue; }
+      const background = page.priority > 0;
+      if (this.downloads >= 3 || (background && this.backgroundDownloads >= 2)) continue;
+      page.phase = 'fetching';
+      this.downloads++;
+      if (background) this.backgroundDownloads++;
+      void fetch(page.url, { signal: AbortSignal.timeout(12000) }).then(async response => {
+        if (!response.ok) throw new Error(`${page.url} HTTP ${response.status}`);
+        page.blob = await response.blob();
+        page.phase = 'downloaded';
+        if (!page.pins.size) this._finish(page);
+      }).catch(error => this._finish(page, error)).finally(() => {
+        this.downloads--;
+        if (background) this.backgroundDownloads--;
+        this.tick();
+      });
+    }
+    if (this.uploading) return;
+    const ready = [...this.pages.values()].filter(page => page.phase === 'downloaded')
+      .sort((a, b) => a.priority - b.priority || a.used - b.used);
+    for (const page of ready) {
+      if (!page.pins.size) { this._finish(page); continue; }
+      if (!this.trim(page.estimate, page.priority === 0)) continue;
+      this.uploading = true;
+      page.phase = 'uploading';
+      void this._upload(page);
+      break;
+    }
+  }
+
+  async _upload(page) {
+    let bitmap;
+    let texture;
+    try {
+      bitmap = await createImageBitmap(page.blob, {
+        resizeWidth: page.width, resizeHeight: page.height, resizeQuality: 'high',
+        imageOrientation: 'flipY', premultiplyAlpha: 'none',
+      });
+      await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
+      if (!page.pins.size) { bitmap.close(); this._finish(page); return; }
+      texture = new THREE.Texture(bitmap);
+      texture.flipY = false;
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.generateMipmaps = false;
+      texture.minFilter = texture.magFilter = THREE.LinearFilter;
+      texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
+      texture.needsUpdate = true;
+      this.renderer.initTexture(texture);
+      Object.assign(page, { texture, bitmap, bytes: bitmap.width * bitmap.height * 8 });
+      this.bytes += page.bytes;
+      this._finish(page);
+    } catch (error) {
+      texture?.dispose();
+      bitmap?.close();
+      this._finish(page, error);
+    } finally {
+      this.uploading = false;
+      this.tick();
+    }
   }
 }
 
@@ -135,7 +150,6 @@ export class Character {
     this.onError = onError;
     if (!caches.has(renderer)) caches.set(renderer, new PageCache(renderer));
     this._cache = caches.get(renderer);
-    this.speed = 2.1;
     this.state = 'idle';
     this.clipKey = null;
     this.frame = 0;
@@ -144,15 +158,24 @@ export class Character {
     this._ready = false;
     this._version = 0;
     this._pendingState = null;
+    this._pending = null;
     this._clips = new Map();
     this._queue = [];
     this._clip = null;
     this._rate = 1;
     this._holdTime = 0;
+    this._active = false;
     this._displayed = null;
-    this._wanted = null;
     this._displayPin = {};
-    this._wantedPin = {};
+    this._residentPin = {};
+    this._resident = new Set();
+    this._slots = {
+      transition: { token: {}, page: null },
+      frame: { token: {}, page: null },
+      prefetch: { token: {}, page: null },
+    };
+    this._phases = new Map();
+    this._fade = null;
     this._projected = new THREE.Vector3();
     this._cameraRotation = new THREE.Quaternion();
     this.group = new THREE.Group();
@@ -165,6 +188,15 @@ export class Character {
       transparent: true, alphaTest: 0.1, depthWrite: true,
       side: THREE.DoubleSide, forceSinglePass: true, toneMapped: false,
     });
+    this._poseUniforms = {
+      posePreviousMap: { value: null }, poseBlend: { value: 1 },
+      posePreviousRect: { value: new THREE.Vector4() }, poseRect: { value: new THREE.Vector4() },
+      posePreviousSize: { value: new THREE.Vector2(1, 1) }, poseSize: { value: new THREE.Vector2(1, 1) },
+      posePreviousCenter: { value: new THREE.Vector2() }, poseCenter: { value: new THREE.Vector2() },
+      poseDrawSize: { value: new THREE.Vector2(1, 1) }, poseDrawCenter: { value: new THREE.Vector2() },
+    };
+    this.material.onBeforeCompile = shader => this._compilePoseBlend(shader);
+    this.material.customProgramCacheKey = () => 'aligned-locomotion-transition-v1';
     this.plane = new THREE.Mesh(geometry, this.material);
     this.plane.visible = false;
     this.billboard.add(this.plane);
@@ -185,9 +217,41 @@ export class Character {
 
   get ready() { return this._ready; }
   get playbackState() { return this._pendingState || this.state; }
+  get preparing() { return Boolean(this._pending); }
+  get canMove() { return this.state === 'move' && !this._pending; }
+
+  _compilePoseBlend(shader) {
+    Object.assign(shader.uniforms, this._poseUniforms);
+    shader.vertexShader = `uniform vec2 poseDrawSize; uniform vec2 poseDrawCenter; varying vec2 posePoint;\n${shader.vertexShader}`
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nposePoint = position.xy * poseDrawSize + poseDrawCenter;');
+    shader.fragmentShader = `
+      uniform sampler2D posePreviousMap;
+      uniform float poseBlend;
+      uniform vec4 posePreviousRect; uniform vec4 poseRect;
+      uniform vec2 posePreviousSize; uniform vec2 poseSize;
+      uniform vec2 posePreviousCenter; uniform vec2 poseCenter;
+      varying vec2 posePoint;
+      vec4 alignedPose(sampler2D image, vec4 rect, vec2 size, vec2 center) {
+        vec2 local = (posePoint - center) / size + 0.5;
+        if (any(lessThan(local, vec2(0.0))) || any(greaterThan(local, vec2(1.0)))) return vec4(0.0);
+        return texture2D(image, rect.xy + local * rect.zw);
+      }
+      ${shader.fragmentShader}`.replace('#include <map_fragment>', `
+        #ifdef USE_MAP
+          vec4 currentPose = alignedPose(map, poseRect, poseSize, poseCenter);
+          if (poseBlend < 1.0) {
+            vec4 previousPose = alignedPose(posePreviousMap, posePreviousRect, posePreviousSize, posePreviousCenter);
+            float coverage = mix(previousPose.a, currentPose.a, poseBlend);
+            vec3 premultiplied = mix(previousPose.rgb * previousPose.a, currentPose.rgb * currentPose.a, poseBlend);
+            currentPose = vec4(premultiplied / max(coverage, 0.00001), coverage);
+          }
+          diffuseColor *= currentPose;
+        #endif
+      `);
+  }
 
   _report(error) {
-    try { this.onError?.(error); } catch { /* A reporting callback must not reject playback. */ }
+    try { this.onError?.(error); } catch { /* Reporting must not reject playback. */ }
   }
 
   _prepare(key) {
@@ -199,53 +263,65 @@ export class Character {
     return this._clips.get(key);
   }
 
-  _want(clip, index, speculative = false) {
+  _releaseSlot(name) {
+    const slot = this._slots[name];
+    slot.page?.pins.delete(slot.token);
+    slot.page?.demands.delete(slot.token);
+    slot.page = null;
+  }
+
+  _request(clip, index, name, priority = 0) {
     const page = this._cache.page(this.role, clip, index);
-    if (page !== this._wanted) {
-      this._wanted?.demands.delete(this._wantedPin);
-      this._wanted?.pins.delete(this._wantedPin);
-      this._wanted = page;
-      page.pins.add(this._wantedPin);
+    const slot = this._slots[name];
+    if (slot.page !== page) {
+      this._releaseSlot(name);
+      slot.page = page;
+      page.pins.add(slot.token);
     }
-    if (speculative) page.demands.delete(this._wantedPin);
-    else page.demands.add(this._wantedPin);
+    if (priority === 0) page.demands.add(slot.token);
     if (!page.texture && !page.promise && performance.now() >= page.retryAt) {
-      const token = this._version;
-      void this._cache.load(page).catch(error => {
-        if (token === this._version && this._wanted === page && page.demands.has(this._wantedPin)) this._report(error);
-      });
+      const request = this._cache.load(page, priority);
+      void request.catch(error => { if (slot.page === page && priority === 0) this._report(error); });
+    } else if (page.promise) {
+      page.priority = Math.min(page.priority, priority);
+      this._cache.tick();
     }
     return page;
   }
 
+  _warmLocomotion() {
+    if (!this.ready || !this._active) return;
+    const move = this._prepare('build/Move');
+    const idle = this._prepare('build/Relax');
+    const idleFrame = this._entryFrame(idle, this._phases.get('idle') || 0);
+    const wanted = new Set(move.data.pages.map((_, index) => this._cache.page(this.role, move, index)));
+    wanted.add(this._cache.page(this.role, idle, this._pageIndex(idle, idleFrame)));
+    for (const page of this._resident) if (!wanted.has(page)) {
+      page.residentPins.delete(this._residentPin);
+      page.pins.delete(this._residentPin);
+    }
+    this._resident = wanted;
+    for (const page of wanted) {
+      page.residentPins.add(this._residentPin);
+      page.pins.add(this._residentPin);
+      if (!page.texture && !page.promise && performance.now() >= page.retryAt) {
+        void this._cache.load(page, 0).catch(error => { if (this._active && this._resident.has(page)) this._report(error); });
+      } else if (page.promise) {
+        page.priority = 0;
+      }
+    }
+    this._cache.tick();
+  }
+
   async init() {
     if (!this._initPromise) this._initPromise = (async () => {
-      const token = this._version;
       const idle = this._prepare('build/Relax');
-      const page = this._want(idle, 0);
-      try {
-        await this._cache.load(page);
-        if (token !== this._version) return this;
-        this._ready = true;
-        // Only update() can commit playback, including the initial frame.
-        this._pending = { token, keys: ['build/Relax'], state: 'idle' };
-        this._pendingState = 'idle';
-        const move = this._prepare('build/Move');
-        const warm = this._cache.page(this.role, move, 0);
-        // Warm movement only if idle plus movement fit without evicting pinned pages.
-        if (this._cache.bytes + warm.estimate <= memoryBudget) {
-          const pin = {};
-          warm.pins.add(pin);
-          try { await this._cache.load(warm); }
-          catch { /* Demand requests retry and report if still active. */ }
-          finally { warm.pins.delete(pin); this._cache.trim(); }
-        }
-        return this;
-      } catch (error) {
-        if (token !== this._version) return this;
-        this._initPromise = null;
-        throw error;
-      }
+      const page = this._request(idle, 0, 'transition');
+      await this._cache.load(page, 0);
+      this._ready = true;
+      this._pending = { token: this._version, keys: ['build/Relax'], state: 'idle', entryTime: 0 };
+      this._pendingState = 'idle';
+      return this;
     })();
     return this._initPromise;
   }
@@ -260,32 +336,40 @@ export class Character {
       const main = first(['front/Attack_Loop', 'front/Attack', 'front/Attack_1']);
       return main ? ['front/Attack_Begin', main, 'front/Attack_End'].filter(exists) : [];
     }
-    if (action === 'skill1' && this.role.id === 'char_2025_shu') {
-      return exists('front/Attack_1') ? ['front/Attack_1'] : [];
-    }
-    if (action === 'skill2' && this.role.id === 'char_1050_chen3') {
-      return ['front/Skill_2_Begin', 'front/Skill_2_Disappear'].filter(exists);
-    }
+    if (action === 'skill1' && this.role.id === 'char_2025_shu') return exists('front/Attack_1') ? ['front/Attack_1'] : [];
+    if (action === 'skill2' && this.role.id === 'char_1050_chen3') return ['front/Skill_2_Begin', 'front/Skill_2_Disappear'].filter(exists);
     const prefix = `front/Skill_${action.slice(-1)}`;
     const main = first([`${prefix}_Loop`, `${prefix}_Idle`, prefix]);
     return [`${prefix}_Begin`, main, `${prefix}_Attack`, `${prefix}_Attack_1`,
       `${prefix}_Attack_2`, `${prefix}_End`].filter(key => key && exists(key));
   }
 
+  _duration(clip) { return clip.data.duration > 0 ? clip.data.duration : clip.data.frames / clip.data.fps; }
+  _entryFrame(clip, time) { return Math.min(clip.data.frames - 1, Math.floor(time * clip.data.fps)); }
+
   _play(keys, state) {
+    const locomotion = state === 'idle' || state === 'move';
+    if (this._pendingState === state && locomotion) return this._pending.promise;
+    // A key reversal can cancel a transition which has not committed yet. Keep
+    // the live phase, rather than recommitting this same clip at its saved phase.
+    if (locomotion && this.state === state && this._clip?.key === keys[0]) {
+      this._pending?.resolve?.(false);
+      this._pending = null;
+      this._pendingState = null;
+      ++this._version;
+      this._releaseSlot('transition');
+      return Promise.resolve(true);
+    }
     this._pending?.resolve?.(false);
     const token = ++this._version;
+    const clip = this._prepare(keys[0]);
+    const entryTime = (state === 'idle' || state === 'move') ? (this._phases.get(state) || 0) % this._duration(clip) : 0;
     this._pendingState = state;
-    return new Promise(resolve => {
-      this._pending = { token, keys, state, resolve };
-      try { this._want(this._prepare(keys[0]), 0); }
-      catch (error) {
-        this._pending = null;
-        this._pendingState = null;
-        this._report(error);
-        resolve(false);
-      }
-    });
+    let resolve;
+    const promise = new Promise(done => { resolve = done; });
+    this._pending = { token, keys, state, entryTime, promise, resolve };
+    this._request(clip, this._pageIndex(clip, this._entryFrame(clip, entryTime)), 'transition');
+    return promise;
   }
 
   playAction(action) {
@@ -297,45 +381,94 @@ export class Character {
   setMoving(moving, directionX = 0, rate = 1) {
     this._rate = Number.isFinite(rate) ? Math.max(0, rate) : 1;
     if (directionX) this.billboard.scale.x = Math.sign(directionX);
-    if (!this.ready) return;
+    if (!this.ready) return false;
     if (moving) {
-      if (this._pendingState && this._pendingState !== 'move') return;
-      if (this.state !== 'idle' && this.state !== 'move') return;
-      if (this._pendingState !== 'move' && this.state !== 'move') {
-        void this._play(['build/Move'], 'move');
-      }
-    } else if (this.state === 'move' || this._pendingState === 'move') {
-      // A pending skill request must survive key release while the old Move is visible.
-      if (!this._pendingState || this._pendingState === 'move') this.resetIdle();
+      // Movement is an explicit interrupt, including a stop still waiting for idle.
+      if (this._pendingState !== 'move' && (this.state !== 'move' || this._pending)) void this._play(['build/Move'], 'move');
+    } else if (this._pendingState === 'move' || (this.state === 'move' && !this._pending)) {
+      this.resetIdle();
     }
+    return this.canMove;
   }
 
   resetIdle() {
-    if (this.ready) void this._play(['build/Relax'], 'idle');
+    if (!this.ready || (this.state === 'idle' && !this._pending)) return;
+    void this._play(['build/Relax'], 'idle');
   }
 
   setActive(active) {
+    this._active = active;
     this.label.style.color = active ? '#65f4ec' : '';
     this.label.setAttribute('aria-current', active ? 'true' : 'false');
     this.label.setAttribute('aria-label', `${this.role.name}${active ? '（选中）' : ''}`);
+    if (active) this._warmLocomotion();
+    else {
+      for (const page of this._resident) {
+        page.residentPins.delete(this._residentPin);
+        page.pins.delete(this._residentPin);
+      }
+      this._resident.clear();
+      this._cache.trim();
+    }
   }
 
-  _commit(clip, state, loop) {
+  _endFade() {
+    if (this._fade) this._fade.page.displayPins.delete(this._fade.pin);
+    this._fade = null;
+    this._poseUniforms.poseBlend.value = 1;
+    this._poseUniforms.posePreviousMap.value = this.material.map;
+    this._drawBounds();
+  }
+
+  _drawBounds() {
+    const u = this._poseUniforms;
+    const center = u.poseCenter.value;
+    const size = u.poseSize.value;
+    if (this._fade) {
+      const previousCenter = u.posePreviousCenter.value, previousSize = u.posePreviousSize.value;
+      const left = Math.min(center.x - size.x / 2, previousCenter.x - previousSize.x / 2);
+      const right = Math.max(center.x + size.x / 2, previousCenter.x + previousSize.x / 2);
+      const bottom = Math.min(center.y - size.y / 2, previousCenter.y - previousSize.y / 2);
+      const top = Math.max(center.y + size.y / 2, previousCenter.y + previousSize.y / 2);
+      u.poseDrawCenter.value.set((left + right) / 2, (bottom + top) / 2);
+      u.poseDrawSize.value.set(right - left, top - bottom);
+    } else {
+      u.poseDrawCenter.value.copy(center);
+      u.poseDrawSize.value.copy(size);
+    }
+    this.plane.position.set(u.poseDrawCenter.value.x, u.poseDrawCenter.value.y, 0);
+    this.plane.scale.set(u.poseDrawSize.value.x, u.poseDrawSize.value.y, 1);
+  }
+
+  _commit(clip, state, loop, time = 0) {
+    const u = this._poseUniforms;
+    const changed = this._clip && this.state !== state;
+    if (this._clip) this._phases.set(this.state, this.frameTime);
+    this._endFade();
+    if (changed && this._displayed) {
+      const pin = {};
+      this._displayed.displayPins.add(pin);
+      this._fade = { page: this._displayed, pin, time: 0 };
+      u.posePreviousMap.value = this.material.map;
+      u.posePreviousRect.value.copy(u.poseRect.value);
+      u.posePreviousSize.value.copy(u.poseSize.value);
+      u.posePreviousCenter.value.copy(u.poseCenter.value);
+      u.poseBlend.value = 0;
+    }
     this._clip = clip;
     this._loop = loop;
     this._holdTime = 0;
     this.state = state;
     this.clipKey = clip.key;
-    this.frameTime = 0;
+    this.frameTime = time;
     const data = clip.data;
-    const height = this.role.manifest.targetHeight ?? 1.65;
-    const unit = height / data.bodyHeight;
-    this.plane.scale.set(data.worldSide * unit, data.worldSide * unit, 1);
-    this.plane.position.set(data.center.x * unit, (data.center.y - data.groundY) * unit, 0);
-    this.material.opacity = 1;
+    const unit = (this.role.manifest.targetHeight ?? 1.65) / data.bodyHeight;
+    u.poseSize.value.set(data.worldSide * unit, data.worldSide * unit);
+    u.poseCenter.value.set(data.center.x * unit, (data.center.y - data.groundY) * unit);
+    this._drawBounds();
     Object.assign(this.label.dataset, { state, clip: clip.key });
     this._frameClip = null;
-    this._setFrame(0);
+    this._setFrame(this._entryFrame(clip, time));
   }
 
   _pageIndex(clip, frame) {
@@ -348,25 +481,23 @@ export class Character {
     if (this._frameClip === this._clip && this.frame === frame) return true;
     const index = this._pageIndex(this._clip, frame);
     if (index < 0) throw new Error(`图集分页缺少帧 ${this.clipKey}:${frame}`);
-    const entry = this._want(this._clip, index);
+    const entry = this._request(this._clip, index, 'frame');
     if (!entry.texture) return false;
     if (!this.material.map) this.material.needsUpdate = true;
     this.material.map = entry.texture;
     this.plane.visible = true;
-    this._displayed?.pins.delete(this._displayPin);
     this._displayed?.displayPins.delete(this._displayPin);
     this._displayed = entry;
-    entry.pins.add(this._displayPin);
     entry.displayPins.add(this._displayPin);
     entry.used = ++this._cache.clock;
-    const page = data.pages[index];
-    const local = frame - page.startFrame;
+    const meta = data.pages[index];
+    const local = frame - meta.startFrame;
     const inset = 0.5 / data.cellSize;
-    const u = (local % page.columns + inset) / page.columns;
-    const v = 1 - (Math.floor(local / page.columns) + 1 - inset) / page.rows;
-    const w = (1 - 2 * inset) / page.columns;
-    const h = (1 - 2 * inset) / page.rows;
-    // Per-mesh UVs allow a single uploaded texture to be shared by all characters.
+    const u = (local % meta.columns + inset) / meta.columns;
+    const v = 1 - (Math.floor(local / meta.columns) + 1 - inset) / meta.rows;
+    const w = (1 - 2 * inset) / meta.columns, h = (1 - 2 * inset) / meta.rows;
+    this._poseUniforms.poseRect.value.set(u, v, w, h);
+    if (!this._fade) this._poseUniforms.posePreviousMap.value = entry.texture;
     const uv = this.plane.geometry.attributes.uv;
     uv.setXY(0, u, v + h); uv.setXY(1, u + w, v + h);
     uv.setXY(2, u, v); uv.setXY(3, u + w, v);
@@ -374,22 +505,17 @@ export class Character {
     this.frame = frame;
     this._frameClip = this._clip;
     this.label.dataset.frame = String(frame);
-    this._cache.trim();
+    this._releaseSlot('frame');
     return true;
   }
 
   _preload() {
+    if (!this._clip) return;
     const index = this._pageIndex(this._clip, this.frame);
-    if (index + 1 < this._clip.data.pages.length) this._want(this._clip, index + 1, true);
-    else if (this._queue.length) this._want(this._prepare(this._queue[0]), 0, true);
-    else if (this._loop) this._want(this._clip, 0, true);
-    // Idle is demanded only when the finite sequence and its final hold end.
-    else {
-      this._wanted?.pins.delete(this._wantedPin);
-      this._wanted?.demands.delete(this._wantedPin);
-      this._wanted = null;
-    }
-    this._cache.trim();
+    if (index + 1 < this._clip.data.pages.length) this._request(this._clip, index + 1, 'prefetch', 1);
+    else if (this._queue.length) this._request(this._prepare(this._queue[0]), 0, 'prefetch', 1);
+    else if (this._loop) this._request(this._clip, 0, 'prefetch', 1);
+    else this._releaseSlot('prefetch');
   }
 
   update(delta, camera, paused = false) {
@@ -406,53 +532,61 @@ export class Character {
       if (this._labelLeft !== left) { this.label.style.left = left; this._labelLeft = left; }
       if (this._labelTop !== top) { this.label.style.top = top; this._labelTop = top; }
     }
+    this._cache.tick();
     if (paused) return;
+    if (this._fade) {
+      this._fade.time += delta;
+      const blend = Math.min(1, this._fade.time / transitionDuration);
+      this._poseUniforms.poseBlend.value = blend * blend * (3 - 2 * blend);
+      if (blend >= 1) this._endFade();
+    }
+    this._warmLocomotion();
     if (this._pending) {
       const pending = this._pending;
-      if (pending.token !== this._version) return;
       const clip = this._prepare(pending.keys[0]);
-      if (!this._want(clip, 0).texture) return;
-      this._queue = pending.keys.slice(1);
-      this._pending = null;
-      this._pendingState = null;
-      this.actionNote = pending.state === 'skill1' && this.role.id === 'char_2025_shu'
-        ? '技能1使用普通攻击动作（源无独立动画）' : '';
-      this._commit(clip, pending.state, pending.state === 'idle' || pending.state === 'move');
-      pending.resolve?.(true);
-      this._preload();
-      return;
+      const index = this._pageIndex(clip, this._entryFrame(clip, pending.entryTime));
+      if (this._request(clip, index, 'transition').texture && !this._fade) {
+        this._queue = pending.keys.slice(1);
+        this._pending = null;
+        this._pendingState = null;
+        this.actionNote = pending.state === 'skill1' && this.role.id === 'char_2025_shu'
+          ? '技能1使用普通攻击动作（源无独立动画）' : '';
+        this._commit(clip, pending.state, pending.state === 'idle' || pending.state === 'move', pending.entryTime);
+        this._releaseSlot('transition');
+        pending.resolve?.(true);
+        this._preload();
+        return;
+      }
+      // Keep the old pose animated while its replacement downloads.
     }
     if (!this._clip) return;
     if (this._holdTime > 0) {
-      this._holdTime = Math.max(0, this._holdTime - Math.max(0, delta));
-      if (this._holdTime === 0) this.resetIdle();
+      this._holdTime = Math.max(0, this._holdTime - delta);
+      if (this._holdTime === 0 && !this._pending) this.resetIdle();
       return;
     }
     let remaining = Math.max(0, delta) * (this.state === 'move' ? this._rate : 1);
     while (remaining > 0) {
-      const data = this._clip.data;
-      const duration = data.duration > 0 ? data.duration : data.frames / data.fps;
+      const duration = this._duration(this._clip);
       const nextTime = Math.min(duration, this.frameTime + remaining);
-      const nextFrame = Math.min(data.frames - 1, Math.floor(nextTime * data.fps));
-      // Stop on the last available frame/time until the demanded page is uploaded.
-      if (!this._setFrame(nextFrame)) return;
+      if (!this._setFrame(this._entryFrame(this._clip, nextTime))) return;
       remaining -= nextTime - this.frameTime;
       this.frameTime = nextTime;
       if (nextTime < duration) break;
       if (this._loop) {
-        if (!this._want(this._clip, 0).texture) return;
+        if (!this._setFrame(0)) return;
         this.frameTime = 0;
-        this._setFrame(0);
-      } else if (this._queue.length) {
+      } else if (this._queue.length && !this._pending) {
         const next = this._prepare(this._queue[0]);
-        if (!this._want(next, 0).texture) return;
+        if (!this._request(next, 0, 'frame').texture) return;
         this._queue.shift();
         this._commit(next, this.state, false);
       } else {
-        this._holdTime = 0.35;
+        this._holdTime = 0.2;
         break;
       }
     }
     this._preload();
+    this._cache.trim();
   }
 }

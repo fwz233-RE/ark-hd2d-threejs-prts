@@ -74,7 +74,6 @@ const rosterButtons = [];
 const keys = new Set();
 const velocity = new THREE.Vector3();
 const desiredVelocity = new THREE.Vector3();
-const previousPosition = new THREE.Vector3();
 const targetPosition = new THREE.Vector3();
 const cameraAnchor = initialPosition.clone();
 const focusProbe = new THREE.Vector3(0, stage.userData.focusHeight ?? 0.12, 0.6);
@@ -210,12 +209,16 @@ renderer.setAnimationLoop(() => {
     desiredVelocity.set(x, 0, z).normalize().multiplyScalar(speed);
     velocity.lerp(desiredVelocity, 1 - Math.exp(-18 * delta));
     if (velocity.lengthSq() < 0.001) velocity.set(0, 0, 0);
-    previousPosition.copy(player.group.position);
-    player.group.position.addScaledVector(velocity, delta);
-    player.group.position.x = THREE.MathUtils.clamp(player.group.position.x, -6.3, 6.3);
-    player.group.position.z = THREE.MathUtils.clamp(player.group.position.z, -7.3, 7.3);
-    const moving = player.group.position.distanceToSquared(previousPosition) > 0.0000001;
-    player.setMoving(moving, velocity.x, speed / 2.1);
+    const wantsToMove = desiredVelocity.lengthSq() > 0;
+    const moving = wantsToMove || velocity.lengthSq() > 0;
+    // Intent drives the animation even while its first page is loading. Position
+    // advances only once Move is visible, avoiding a frozen pose sliding around.
+    player.setMoving(moving, x, Math.max(0.15, velocity.length() / 2.1));
+    if (player.canMove) {
+      player.group.position.addScaledVector(velocity, delta);
+      player.group.position.x = THREE.MathUtils.clamp(player.group.position.x, -6.3, 6.3);
+      player.group.position.z = THREE.MathUtils.clamp(player.group.position.z, -7.3, 7.3);
+    }
   }
   const anchor = player ? player.group.position : initialPosition;
   // Partial follow leaves room for walking through the camera's focal plane.
@@ -247,9 +250,11 @@ renderer.setAnimationLoop(() => {
   }
   if (player) {
     const state = paused ? 'paused' : player.playbackState;
-    if (state !== lastState) {
-      lastState = state;
-      motionStatus.textContent = paused ? '已暂停' : actionLabels[state];
+    const displayState = player.preparing && !paused ? `preparing:${state}` : state;
+    if (displayState !== lastState) {
+      lastState = displayState;
+      motionStatus.textContent = paused ? '已暂停'
+        : player.preparing ? `准备${actionLabels[state]}…` : actionLabels[state];
       actionButtons.forEach(button => button.classList.toggle('active', button.dataset.action === state));
       status.title = player.actionNote || '';
     }
