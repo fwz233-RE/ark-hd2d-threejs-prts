@@ -24,6 +24,7 @@ globalThis.createImageBitmap = async (_, options) => ({
 });
 const source = (await readFile(new URL('../src/Character.js', import.meta.url), 'utf8'))
   .replace("from 'three'", `from '${import.meta.resolve('three')}'`)
+  .replace("from './PoseSnapshot.js'", `from '${new URL('../src/PoseSnapshot.js', import.meta.url).href}'`)
   .replaceAll('import.meta.env.BASE_URL', "'/'");
 const { Character } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
 
@@ -45,7 +46,8 @@ function make(id) {
   const errors = [];
   const character = new Character({ role: role(id), scene: new THREE.Scene(),
     labelsRoot: { appendChild() {} }, shadowTexture: new THREE.Texture(),
-    renderer: { initTexture() {} }, onError: error => errors.push(error) });
+    renderer: { initTexture() {}, getRenderTarget() { return null; }, setRenderTarget() {}, render() {} },
+    onError: error => errors.push(error) });
   return { character, errors };
 }
 async function until(predicate, characters, limit = 200) {
@@ -109,7 +111,7 @@ test('cancelling an uncommitted start/stop preserves the live phase', async () =
   assert.equal(c.frameTime, movingTime);
 });
 
-test('rapid reversals preserve the in-progress blend; pause freezes both poses', async () => {
+test('rapid reversals commit immediately from a snapshot; pause freezes both poses', async () => {
   const { character: c } = await initialized('blend');
   c.setActive(true);
   await until(() => [...c._resident].every(page => page.texture), [c]);
@@ -121,9 +123,12 @@ test('rapid reversals preserve the in-progress blend; pause freezes both poses',
   assert(oldBlend > 0 && oldBlend < 1);
   c.setMoving(false);
   c.update(0, null);
-  assert.equal(c._fade, oldFade);
-  assert.equal(c._poseUniforms.poseBlend.value, oldBlend);
-  const frozen = [c.frameTime, c.frame, c._fade.time, oldBlend];
+  assert.notEqual(c._fade, oldFade);
+  assert.equal(c.state, 'idle');
+  assert.equal(c._pending, null);
+  assert.equal(c._snapshot.material.uniforms.blend.value, oldBlend);
+  assert.equal(c._poseUniforms.poseBlend.value, 0);
+  const frozen = [c.frameTime, c.frame, c._fade.time, 0];
   for (let i = 0; i < 20; i++) c.update(0.05, null, true);
   assert.deepEqual([c.frameTime, c.frame, c._fade.time, c._poseUniforms.poseBlend.value], frozen);
   await until(() => c.state === 'idle' && !c._pending && !c._fade, [c]);
@@ -147,6 +152,44 @@ test('a delayed page neither freezes current playback nor blocks another demand'
   holdRequest = null; holdRelease(); holdRelease = null;
   await until(() => ![...a._cache.pages.values()].some(page => page.phase === 'fetching'), [a, b]);
   assert.equal(a.state, 'idle');
+});
+
+test('held direction does not cancel a skill; a fresh press interrupts immediately', async () => {
+  const { character: c } = await initialized('input');
+  c.setActive(true);
+  await until(() => [...c._resident].every(page => page.texture), [c]);
+  const skill = c._prepare('front/Skill_1');
+  await until(() => Boolean(c._request(skill, 0, 'transition').texture), [c]);
+  c.setMoving(true, 1, 1, 1);
+  c.update(0, null);
+  void c.playAction('skill1');
+  c.setMoving(true, 1, 1, 1);
+  c.update(0, null);
+  assert.equal(c.state, 'skill1');
+  assert.equal(c._poseUniforms.poseBlend.value, 0);
+  c.setMoving(true, 1, 1, 2);
+  c.update(0, null);
+  assert.equal(c.state, 'move');
+  assert.equal(c._pending, null);
+  assert(c.canMove);
+  c.setMoving(false, 0, 1, 2);
+  assert(!c.canMove);
+  c.update(0, null);
+  assert.equal(c.state, 'idle');
+});
+
+test('finite actions return without a final-frame hold', async () => {
+  const { character: c } = await initialized('finish');
+  c.setActive(true);
+  const attack = c._prepare('front/Attack');
+  await until(() => Boolean(c._request(attack, 0, 'transition').texture), [c]);
+  void c.playAction('attack');
+  c.update(0, null);
+  c.update(c._duration(attack), null);
+  assert.equal(c._pendingState, 'idle');
+  assert.equal(c._holdTime, 0);
+  c.update(0, null);
+  assert.equal(c.state, 'idle');
 });
 
 test.after(() => {

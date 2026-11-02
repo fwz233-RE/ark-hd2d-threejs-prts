@@ -1,11 +1,12 @@
 import * as THREE from 'three';
+import { PoseSnapshot } from './PoseSnapshot.js';
 
 const actions = new Set(['idle', 'move', 'attack', 'skill1', 'skill2', 'skill3']);
 const assetBase = import.meta.env.BASE_URL;
 const caches = new WeakMap();
 const memoryBudget = 256 * 1024 * 1024;
 const maxPageDimension = 2048;
-const transitionDuration = 0.12;
+const transitionDuration = 0.08;
 
 // Downloads have a reserved demand lane. Decode/upload is separate, one page per
 // rendered frame, so a slow background download never blocks a walking request.
@@ -18,6 +19,7 @@ class PageCache {
     this.downloads = 0;
     this.backgroundDownloads = 0;
     this.uploading = false;
+    this.interactiveUntil = 0;
   }
 
   page(role, clip, index) {
@@ -104,6 +106,7 @@ class PageCache {
       .sort((a, b) => a.priority - b.priority || a.used - b.used);
     for (const page of ready) {
       if (!page.pins.size) { this._finish(page); continue; }
+      if (page.priority > 0 && performance.now() < this.interactiveUntil) continue;
       if (!this.trim(page.estimate, page.priority === 0)) continue;
       this.uploading = true;
       page.phase = 'uploading';
@@ -150,6 +153,9 @@ export class Character {
     this.onError = onError;
     if (!caches.has(renderer)) caches.set(renderer, new PageCache(renderer));
     this._cache = caches.get(renderer);
+    this._renderer = renderer;
+    this._snapshot = null;
+    this._wantsMove = false;
     this.state = 'idle';
     this.clipKey = null;
     this.frame = 0;
@@ -169,6 +175,7 @@ export class Character {
     this._displayPin = {};
     this._residentPin = {};
     this._resident = new Set();
+    this._actionWarm = new Map();
     this._slots = {
       transition: { token: {}, page: null },
       frame: { token: {}, page: null },
@@ -218,7 +225,7 @@ export class Character {
   get ready() { return this._ready; }
   get playbackState() { return this._pendingState || this.state; }
   get preparing() { return Boolean(this._pending); }
-  get canMove() { return this.state === 'move' && !this._pending; }
+  get canMove() { return this._wantsMove && this.state === 'move'; }
 
   _compilePoseBlend(shader) {
     Object.assign(shader.uniforms, this._poseUniforms);
@@ -348,6 +355,8 @@ export class Character {
   _entryFrame(clip, time) { return Math.min(clip.data.frames - 1, Math.floor(time * clip.data.fps)); }
 
   _play(keys, state) {
+    // Keep speculative GPU uploads out of the brief input/transition window.
+    this._cache.interactiveUntil = performance.now() + 160;
     const locomotion = state === 'idle' || state === 'move';
     if (this._pendingState === state && locomotion) return this._pending.promise;
     // A key reversal can cancel a transition which has not committed yet. Keep
@@ -378,13 +387,19 @@ export class Character {
     return keys.length ? this._play(keys, action) : Promise.resolve(false);
   }
 
-  setMoving(moving, directionX = 0, rate = 1) {
+  setMoving(moving, directionX = 0, rate = 1, inputVersion = null) {
+    const pressed = moving && (!this._wantsMove || (inputVersion !== null && inputVersion !== this._moveInputVersion));
+    this._wantsMove = moving;
+    this._moveInputVersion = inputVersion;
     this._rate = Number.isFinite(rate) ? Math.max(0, rate) : 1;
     if (directionX) this.billboard.scale.x = Math.sign(directionX);
     if (!this.ready) return false;
     if (moving) {
-      // Movement is an explicit interrupt, including a stop still waiting for idle.
-      if (this._pendingState !== 'move' && (this.state !== 'move' || this._pending)) void this._play(['build/Move'], 'move');
+      // A fresh movement press interrupts combat. A key held before a skill
+      // request must not cancel that request again on every animation frame.
+      if (pressed || (!this._pending && this.state === 'idle')) {
+        if (this._pendingState !== 'move' && (this.state !== 'move' || this._pending)) void this._play(['build/Move'], 'move');
+      }
     } else if (this._pendingState === 'move' || (this.state === 'move' && !this._pending)) {
       this.resetIdle();
     }
@@ -396,13 +411,34 @@ export class Character {
     void this._play(['build/Relax'], 'idle');
   }
 
+  warmAction(action) {
+    if (!this.ready || !this._active) return;
+    const key = this._sequence(action)[0];
+    if (!key) return;
+    const page = this._cache.page(this.role, this._prepare(key), 0);
+    if (!this._actionWarm.has(page)) {
+      const token = {};
+      this._actionWarm.set(page, token);
+      page.pins.add(token);
+    }
+    if (!page.texture && !page.promise && performance.now() >= page.retryAt) {
+      void this._cache.load(page, 2).catch(() => { /* Demand requests report errors. */ });
+    }
+  }
+
   setActive(active) {
     this._active = active;
     this.label.style.color = active ? '#65f4ec' : '';
     this.label.setAttribute('aria-current', active ? 'true' : 'false');
     this.label.setAttribute('aria-label', `${this.role.name}${active ? '（选中）' : ''}`);
-    if (active) this._warmLocomotion();
-    else {
+    if (active) {
+      this._prepareSnapshot();
+      this._warmLocomotion();
+      for (const action of ['attack', 'skill1', 'skill2', 'skill3']) this.warmAction(action);
+    } else {
+      this._wantsMove = false;
+      for (const [page, token] of this._actionWarm) page.pins.delete(token);
+      this._actionWarm.clear();
       for (const page of this._resident) {
         page.residentPins.delete(this._residentPin);
         page.pins.delete(this._residentPin);
@@ -412,8 +448,18 @@ export class Character {
     }
   }
 
+  _prepareSnapshot() {
+    if (!this._snapshot && this.material.map) {
+      this._snapshot = new PoseSnapshot();
+      // Allocate both ping-pong targets and compile the shared program before an
+      // input can interrupt a blend. Captures never replace the visible pose here.
+      this._snapshot.capture(this._renderer, this);
+      this._snapshot.capture(this._renderer, this);
+    }
+  }
+
   _endFade() {
-    if (this._fade) this._fade.page.displayPins.delete(this._fade.pin);
+    if (this._fade?.page) this._fade.page.displayPins.delete(this._fade.pin);
     this._fade = null;
     this._poseUniforms.poseBlend.value = 1;
     this._poseUniforms.posePreviousMap.value = this.material.map;
@@ -443,16 +489,29 @@ export class Character {
   _commit(clip, state, loop, time = 0) {
     const u = this._poseUniforms;
     const changed = this._clip && this.state !== state;
+    let interrupted = null;
+    if (changed && this._fade) {
+      this._snapshot ??= new PoseSnapshot();
+      interrupted = this._snapshot.capture(this._renderer, this);
+    }
     if (this._clip) this._phases.set(this.state, this.frameTime);
     this._endFade();
     if (changed && this._displayed) {
-      const pin = {};
-      this._displayed.displayPins.add(pin);
-      this._fade = { page: this._displayed, pin, time: 0 };
-      u.posePreviousMap.value = this.material.map;
-      u.posePreviousRect.value.copy(u.poseRect.value);
-      u.posePreviousSize.value.copy(u.poseSize.value);
-      u.posePreviousCenter.value.copy(u.poseCenter.value);
+      if (interrupted) {
+        this._fade = { page: null, time: 0 };
+        u.posePreviousMap.value = interrupted.texture;
+        u.posePreviousRect.value.set(0, 0, 1, 1);
+        u.posePreviousSize.value.copy(interrupted.size);
+        u.posePreviousCenter.value.copy(interrupted.center);
+      } else {
+        const pin = {};
+        this._displayed.displayPins.add(pin);
+        this._fade = { page: this._displayed, pin, time: 0 };
+        u.posePreviousMap.value = this.material.map;
+        u.posePreviousRect.value.copy(u.poseRect.value);
+        u.posePreviousSize.value.copy(u.poseSize.value);
+        u.posePreviousCenter.value.copy(u.poseCenter.value);
+      }
       u.poseBlend.value = 0;
     }
     this._clip = clip;
@@ -469,6 +528,7 @@ export class Character {
     Object.assign(this.label.dataset, { state, clip: clip.key });
     this._frameClip = null;
     this._setFrame(this._entryFrame(clip, time));
+    if (this._active) this._prepareSnapshot();
   }
 
   _pageIndex(clip, frame) {
@@ -545,7 +605,7 @@ export class Character {
       const pending = this._pending;
       const clip = this._prepare(pending.keys[0]);
       const index = this._pageIndex(clip, this._entryFrame(clip, pending.entryTime));
-      if (this._request(clip, index, 'transition').texture && !this._fade) {
+      if (this._request(clip, index, 'transition').texture) {
         this._queue = pending.keys.slice(1);
         this._pending = null;
         this._pendingState = null;
@@ -582,7 +642,10 @@ export class Character {
         this._queue.shift();
         this._commit(next, this.state, false);
       } else {
-        this._holdTime = 0.2;
+        if (!this._pending) {
+          if (this._active && this._wantsMove) void this._play(['build/Move'], 'move');
+          else this.resetIdle();
+        }
         break;
       }
     }

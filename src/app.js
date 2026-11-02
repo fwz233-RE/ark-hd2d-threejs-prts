@@ -88,6 +88,7 @@ let selectedIndex = 0;
 let paused = false;
 let ready = false;
 let lastState = '';
+let movementInputVersion = 0;
 
 function reportError(error) {
   status.className = 'asset-status error';
@@ -163,14 +164,19 @@ function togglePause() {
 
 function playAction(action) {
   if (!ready) return;
-  keys.clear();
-  velocity.set(0, 0, 0);
-  if (action === 'idle') player.resetIdle();
-  else void player.playAction(action);
+  if (action === 'idle') {
+    keys.clear();
+    player.setMoving(false);
+    player.resetIdle();
+  } else void player.playAction(action);
 }
 
 pauseButton.addEventListener('click', togglePause);
-actionButtons.forEach(button => button.addEventListener('click', () => playAction(button.dataset.action)));
+actionButtons.forEach(button => {
+  button.addEventListener('click', () => playAction(button.dataset.action));
+  button.addEventListener('pointerenter', () => player?.warmAction(button.dataset.action));
+  button.addEventListener('focus', () => player?.warmAction(button.dataset.action));
+});
 const movementKeys = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight', 'ShiftLeft', 'ShiftRight']);
 addEventListener('keydown', event => {
   if (event.target instanceof Element && event.target.matches('input, textarea, select, [contenteditable="true"]')) return;
@@ -181,6 +187,7 @@ addEventListener('keydown', event => {
     if (!event.repeat) selectCharacter(Number(event.code.at(-1)) - 1);
     event.preventDefault();
   } else if (movementKeys.has(event.code)) {
+    if (!event.repeat && !event.code.startsWith('Shift')) movementInputVersion++;
     keys.add(event.code);
     event.preventDefault();
   }
@@ -210,10 +217,9 @@ renderer.setAnimationLoop(() => {
     velocity.lerp(desiredVelocity, 1 - Math.exp(-18 * delta));
     if (velocity.lengthSq() < 0.001) velocity.set(0, 0, 0);
     const wantsToMove = desiredVelocity.lengthSq() > 0;
-    const moving = wantsToMove || velocity.lengthSq() > 0;
-    // Intent drives the animation even while its first page is loading. Position
-    // advances only once Move is visible, avoiding a frozen pose sliding around.
-    player.setMoving(moving, x, Math.max(0.15, velocity.length() / 2.1));
+    // Key release requests idle immediately; residual velocity must not delay the
+    // stop transition. Track fresh presses separately from OS key-repeat events.
+    player.setMoving(wantsToMove, x, Math.max(0.5, velocity.length() / 2.1), movementInputVersion);
     if (player.canMove) {
       player.group.position.addScaledVector(velocity, delta);
       player.group.position.x = THREE.MathUtils.clamp(player.group.position.x, -6.3, 6.3);
